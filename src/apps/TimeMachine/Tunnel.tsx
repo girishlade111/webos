@@ -39,8 +39,8 @@ export const Tunnel: React.FC<TunnelProps> = ({
     const isFront = d === 0;
     const z = -d * STEP_Z;
     const x = d * STEP_X;
-    const opacity = isFront ? 1 : Math.max(0, 0.85 - d * 0.13);
-    const blur = isFront ? 0 : Math.min(2.4, d * 0.42);
+    const opacity = isFront ? 1 : Math.max(0, 0.92 - d * 0.11);
+    const blur = isFront ? 0 : Math.min(1.4, d * 0.24);
     const sample = Object.values(snap.nodes)
       .sort((a, b) => b.modifiedAt - a.modifiedAt)
       .slice(0, 4);
@@ -62,7 +62,8 @@ export const Tunnel: React.FC<TunnelProps> = ({
             ? { duration: 0 }
             : { type: 'spring', stiffness: 190, damping: 26, mass: 0.9 }
         }
-        style={{ transformStyle: 'preserve-3d', zIndex: 100 - d }}
+        style={{
+          transformStyle: 'preserve-3d', zIndex: 100 - d }}
         className={`absolute left-1/2 top-1/2 flex h-[212px] w-[352px] -ml-[176px] -mt-[106px] flex-col overflow-hidden rounded-[14px] text-left ${
           isFront ? 'ring-1 ring-white/70' : ''
         }`}
@@ -73,13 +74,13 @@ export const Tunnel: React.FC<TunnelProps> = ({
         <div
           className="absolute inset-0 rounded-[14px] border"
           style={{
-            borderColor: isFront ? 'rgba(120,170,255,0.85)' : 'rgba(255,255,255,0.22)',
+            borderColor: isFront ? 'rgba(126,176,255,0.9)' : 'rgba(255,255,255,0.3)',
             background: isFront
-              ? 'linear-gradient(155deg, rgba(38,62,120,0.94) 0%, rgba(16,26,54,0.96) 58%, rgba(9,14,32,0.97) 100%)'
-              : 'linear-gradient(155deg, rgba(20,28,52,0.9) 0%, rgba(10,16,34,0.94) 100%)',
+              ? 'linear-gradient(155deg, rgba(42,68,132,0.96) 0%, rgba(18,30,62,0.97) 58%, rgba(10,16,36,0.98) 100%)'
+              : `linear-gradient(155deg, rgba(24,34,62,0.94) 0%, rgba(12,19,40,0.96) 100%)`,
             boxShadow: isFront
-              ? '0 26px 70px -18px rgba(0,0,0,0.85), 0 0 44px -10px rgba(80,150,255,0.55), inset 0 1px 0 rgba(255,255,255,0.22)'
-              : '0 14px 40px -14px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12)',
+              ? '0 26px 70px -18px rgba(0,0,0,0.85), 0 0 46px -10px rgba(80,150,255,0.6), inset 0 1px 0 rgba(255,255,255,0.24)'
+              : '0 16px 44px -16px rgba(0,0,0,0.78), inset 0 1px 0 rgba(255,255,255,0.16)',
           }}
         />
 

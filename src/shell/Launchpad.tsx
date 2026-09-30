@@ -144,7 +144,7 @@ export const Launchpad: React.FC = () => {
     sound.playClick();
     setLaunchpadOpen(false);
     setSearchQuery('');
-    openWindow(appId);
+    openWindow(appId, APP_REGISTRY[appId]?.name);
   };
 
   return (

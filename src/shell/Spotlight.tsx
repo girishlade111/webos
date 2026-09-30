@@ -68,7 +68,7 @@ export const Spotlight: React.FC = () => {
       title: app.name,
       subtitle: 'Application',
       action: () => {
-        openWindow(app.id);
+        openWindow(app.id, app.name);
         setSpotlightOpen(false);
       },
     });
