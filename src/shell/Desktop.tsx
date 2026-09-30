@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { 
-  HardDrive, Folder, FileText, Image as ImageIcon, Plus, Check, 
-  Trash2, Sparkles, X, Grid, ArrowUpDown, Info, Copy, ExternalLink, 
-  Search, LayoutGrid, Monitor, RefreshCw, Sliders, Eye, Sun, Moon, 
-  ChevronRight
+  HardDrive, Folder, FileText, Image as ImageIcon, Check, 
+  Sparkles, X, Search, Monitor, RefreshCw, Sliders, Eye, Sun, Moon
 } from 'lucide-react';
 import { useThemeStore, ACCENT_MAP } from '../core/themeStore';
 import { useFSStore, DESKTOP_ID, ROOT_ID } from '../core/fsStore';
@@ -14,6 +12,14 @@ import { FSNode } from '../types/os';
 import { sound } from '../core/sound';
 import { useWidgetStore } from '../core/widgetStore';
 import { UnifiedWidgetRenderer } from './MacOSWidgets';
+import {
+  ContextMenu,
+  menuItem,
+  menuSeparator,
+  menuSubmenu,
+  useContextMenu,
+  MenuNode,
+} from './ContextMenu';
 
 interface DesktopIconItem {
   id: string;
