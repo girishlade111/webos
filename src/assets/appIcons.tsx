@@ -532,6 +532,28 @@ export const StickiesIcon: React.FC<IconProps> = ({ size = 64, className = '' })
   </svg>
 );
 
+// Monochrome Menu Bar Time Machine glyph — circular rewind arrow, no plate.
+export const TimeMachineGlyph: React.FC<IconProps> = ({ size = 16, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    aria-hidden="true"
+  >
+    <path
+      d="M4.6 6.9A6.3 6.3 0 1 1 3.9 11"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+    />
+    <path d="M1.2 4.6L4.7 6.6L2 9.5Z" fill="currentColor" />
+    <path d="M10 6.6V10l2.6 1.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 // Time Machine Icon — circular "rewind" arrow sweeping a clock face
 export const TimeMachineIcon: React.FC<IconProps> = ({ size = 64, className = '' }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={`shadow-lg rounded-2xl ${className}`}>

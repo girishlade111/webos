@@ -3,7 +3,7 @@ import {
   Wifi, Search, Sliders, Moon, RotateCcw, 
   Power, Lock, Settings as SettingsIcon, Info 
 } from 'lucide-react';
-import { AppleLogo, TimeMachineIcon } from '../assets/appIcons';
+import { AppleLogo, TimeMachineIcon, TimeMachineGlyph } from '../assets/appIcons';
 import { AboutMacDialog } from './AboutMacDialog';
 import { BatteryGlyph } from './BatteryGlyph';
 import { BatteryPopover } from './BatteryPopover';
