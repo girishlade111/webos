@@ -517,10 +517,9 @@ export const useTimeMachineStore = create<TimeMachineState>((set, get) => ({
     const snapshot = snapshots.find((s) => s.id === snapshotId);
     if (!snapshot || nodeIds.length === 0) return null;
 
-    set({ phase: 'restoring', progress: 0.15, lastError: null });
-
     try {
       await get().backUpNow('Before restore', 'pre-restore');
+      set({ phase: 'restoring', progress: 0.2 });
       const blobs = await loadBlobs();
       const restored: Record<string, FSNode> = {};
       let filesRestored = 0;
