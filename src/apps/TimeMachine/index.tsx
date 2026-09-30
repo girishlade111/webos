@@ -344,17 +344,19 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
         return;
       }
       if (e.key === 'ArrowLeft' && snapshots.length) {
+        e.preventDefault();
         setPane('browse');
-        setSelectedIndex((i) => Math.max(0, i - 1));
+        selectIndex(Math.max(0, selectedIndex - 1));
       }
       if (e.key === 'ArrowRight' && snapshots.length) {
+        e.preventDefault();
         setPane('browse');
-        setSelectedIndex((i) => Math.min(snapshots.length - 1, i + 1));
+        selectIndex(Math.min(snapshots.length - 1, selectedIndex + 1));
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, snapshots.length]);
+  }, [selected, selectedIndex, snapshots.length, selectIndex]);
 
   const addExclusion = () => {
     const name = exclusionDraft.trim();
@@ -575,7 +577,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
             selectedIndex={Math.max(0, selectedIndex)}
             onSelect={(i) => {
               setPane('browse');
-              setSelectedIndex(i);
+              selectIndex(i);
             }}
             reducedMotion={reducedMotion}
           />
