@@ -197,6 +197,7 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
   wifiEnabled: true,
   bluetoothEnabled: true,
   doNotDisturb: false,
+  volumeHudNonce: 0,
   activeMenuDropdown: null,
   isSpotlightOpen: false,
   isControlCenterOpen: false,
