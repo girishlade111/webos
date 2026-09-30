@@ -270,20 +270,36 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
   }, []);
 
   // Keep the selection pinned to "now" as backups land, and honour deep links.
+  const followsNow = useRef(true);
   useEffect(() => {
     if (snapshots.length === 0) {
+      followsNow.current = true;
       setSelectedIndex(-1);
       return;
     }
     setSelectedIndex((prev) => {
       if (initialParams?.snapshotId) {
         const idx = snapshots.findIndex((s) => s.id === initialParams.snapshotId);
-        if (idx >= 0) return idx;
+        if (idx >= 0) {
+          followsNow.current = false;
+          return idx;
+        }
       }
-      if (prev < 0) return snapshots.length - 1;
+      // Riding along with the newest backup unless the user scrubbed away.
+      if (followsNow.current || prev < 0 || prev === snapshots.length - 1) {
+        return snapshots.length - 1;
+      }
       return Math.min(prev, snapshots.length - 1);
     });
   }, [snapshots.length, initialParams?.snapshotId]);
+
+  const selectIndex = useCallback(
+    (index: number) => {
+      followsNow.current = index === snapshots.length - 1;
+      setSelectedIndex(index);
+    },
+    [snapshots.length]
+  );
 
   const selected = selectedIndex >= 0 ? snapshots[selectedIndex] : undefined;
   const isLive = !!selected && selectedIndex === snapshots.length - 1;
