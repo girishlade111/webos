@@ -304,13 +304,65 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
   },
 
   setVolume: (volume) => {
-    sound.setVolume(volume);
+    get().setMasterVolume(volume);
+  },
+
+  /**
+   * Master output level. Mirrors macOS semantics:
+   * dragging to 0 mutes, raising above 0 unmutes, and the level is remembered
+   * separately for every output device.
+   */
+  setMasterVolume: (volume) => {
+    const clamped = Math.round(Math.max(0, Math.min(100, volume)));
+
     set((state) => {
-      const updated = { ...state, volume };
+      const soundEnabled = clamped === 0 ? false : state.soundEnabled || clamped > 0;
+
+      if (soundEnabled !== state.soundEnabled) {
+        sound.setMuted(!soundEnabled);
+      }
+      sound.setVolume(clamped);
+
+      const updated: ThemeSettings = {
+        ...state,
+        volume: clamped,
+        soundEnabled,
+        volumeByDevice: { ...state.volumeByDevice, [state.outputDeviceId]: clamped },
+      };
       saveState(updated);
-      return { volume };
+      return { volume: clamped, soundEnabled, volumeByDevice: updated.volumeByDevice };
     });
   },
+
+  adjustVolume: (delta) => {
+    const { volume, setMasterVolume, volumeHudNonce } = get();
+    setMasterVolume(volume + delta);
+    set({ volumeHudNonce: volumeHudNonce + 1 });
+  },
+
+  /** Route audio to another device, restoring that device's remembered level. */
+  setOutputDevice: (id) => {
+    const device = getAudioOutputDevice(id);
+    if (device.id === get().outputDeviceId) return;
+
+    set((state) => {
+      // Remember the outgoing device's level before switching away.
+      const volumeByDevice = {
+        ...state.volumeByDevice,
+        [state.outputDeviceId]: state.volume,
+        [device.id]: state.volumeByDevice[device.id] ?? device.defaultVolume,
+      };
+      const volume = volumeByDevice[device.id];
+
+      sound.setVolume(volume);
+
+      const updated: ThemeSettings = { ...state, outputDeviceId: device.id, volume, volumeByDevice };
+      saveState(updated);
+      return { outputDeviceId: device.id, volume, volumeByDevice };
+    });
+  },
+
+  showVolumeHud: () => set((state) => ({ volumeHudNonce: state.volumeHudNonce + 1 })),
 
   setUserInfo: (username, avatar) => {
     set((state) => {
