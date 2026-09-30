@@ -336,9 +336,9 @@ export const MenuBar: React.FC = () => {
               isTimeMachineOpen ? 'bg-black/15 dark:bg-white/15' : 'hover:bg-black/10 dark:hover:bg-white/10'
             }`}
           >
-            <TimeMachineIcon
-              size={14}
-              className={tmConfig.enabled ? 'opacity-95' : 'opacity-40 grayscale'}
+            <TimeMachineGlyph
+              size={15}
+              className={tmConfig.enabled ? 'opacity-95' : 'opacity-40'}
             />
           </button>
 
