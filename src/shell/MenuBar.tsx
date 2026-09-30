@@ -338,7 +338,9 @@ export const MenuBar: React.FC = () => {
           >
             <TimeMachineGlyph
               size={15}
-              className={tmConfig.enabled ? 'opacity-95' : 'opacity-40'}
+              className={`${tmConfig.enabled ? 'opacity-95' : 'opacity-40'} ${
+                tmBusy ? 'tm-glyph-spin' : ''
+              }`}
             />
           </button>
 

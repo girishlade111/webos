@@ -479,9 +479,23 @@
   will-change: opacity;
 }
 
+/* Menu bar glyph rotates while a capture is in flight. */
+@keyframes tmGlyphSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.tm-glyph-spin {
+  animation: tmGlyphSpin 1.1s linear infinite;
+  transform-origin: 50% 50%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tm-drift,
   .tm-twinkle {
+    animation: none;
+  }
+  .tm-glyph-spin {
     animation: none;
   }
 }
