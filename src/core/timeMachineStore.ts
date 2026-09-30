@@ -442,10 +442,9 @@ export const useTimeMachineStore = create<TimeMachineState>((set, get) => ({
     const snapshot = snapshots.find((s) => s.id === snapshotId);
     if (!snapshot) return null;
 
-    set({ phase: 'restoring', progress: 0.05, lastError: null });
-
     try {
       // Safety net: never restore without a pre-restore checkpoint on disk.
+      // Taken *before* the phase flips to 'restoring' so the capture is allowed to run.
       await get().backUpNow('Before restore', 'pre-restore');
       set({ phase: 'restoring', progress: 0.25 });
 
