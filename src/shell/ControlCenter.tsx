@@ -290,47 +290,17 @@ export const ControlCenter: React.FC = () => {
             </span>
             <span className="tabular-nums text-neutral-400 font-mono text-[10px]">{brightness}%</span>
           </div>
-          <input
-            type="range"
-            min="30"
-            max="100"
+          <MacSlider
             value={brightness}
-            onChange={(e) => setBrightness(Number(e.target.value))}
-            className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-[var(--accent)]"
+            min={30}
+            max={100}
+            onChange={setBrightness}
+            ariaLabel="Display brightness"
           />
         </div>
 
-        {/* Sound Volume Slider with Mute Toggle */}
-        <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-neutral-800/70 p-3 shadow-sm space-y-1.5">
-          <div className="flex justify-between items-center text-[11px] font-semibold">
-            <button
-              onClick={() => {
-                const next = !soundEnabled;
-                setSoundEnabled(next);
-                if (next) sound.playDockClick();
-              }}
-              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity text-left"
-              title={soundEnabled ? 'Click to Mute' : 'Click to Unmute'}
-            >
-              {soundEnabled ? (
-                <Volume2 size={13} className="text-blue-500" />
-              ) : (
-                <VolumeX size={13} className="text-neutral-400" />
-              )}
-              <span>Sound {soundEnabled ? '' : '(Muted)'}</span>
-            </button>
-            <span className="tabular-nums text-neutral-400 font-mono text-[10px]">{volume}%</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={volume}
-            disabled={!soundEnabled}
-            onChange={(e) => setVolume(Number(e.target.value))}
-            className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-[var(--accent)] disabled:opacity-40"
-          />
-        </div>
+        {/* Sound — master output level + output device manager */}
+        <AudioOutputModule />
 
         {/* Now Playing Widget */}
         <div className="rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-neutral-800/70 p-3 shadow-sm flex items-center justify-between">
