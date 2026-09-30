@@ -125,19 +125,21 @@ export const Tunnel: React.FC<TunnelProps> = ({
     );
   }
 
+  const reach = STEP_X * DEPTH;
   return (
     <div
       className="relative flex h-full w-full items-center justify-center overflow-hidden"
       style={{ perspective: '1150px', perspectiveOrigin: '50% 50%' }}
     >
-      {/* Light path threading the stack */}
+      {/* Light path threading the stack, running from the vanishing point back to the viewer */}
       <div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-px -translate-y-1/2"
+        className="pointer-events-none absolute top-1/2 h-px -translate-y-1/2"
         style={{
-          width: `${STEP_X * DEPTH + 260}px`,
-          marginLeft: `-${(STEP_X * DEPTH + 260) / 2 - 90}px`,
+          left: '50%',
+          width: `${reach + 420}px`,
+          marginLeft: `${-reach / 2}px`,
           background:
-            'linear-gradient(90deg, rgba(120,180,255,0) 0%, rgba(120,180,255,0.5) 32%, rgba(190,215,255,0.75) 52%, rgba(120,180,255,0.28) 100%)',
+            'linear-gradient(90deg, rgba(140,190,255,0) 0%, rgba(140,190,255,0.32) 46%, rgba(198,220,255,0.72) 68%, rgba(140,190,255,0.22) 100%)',
           filter: 'blur(0.6px)',
         }}
         aria-hidden="true"
