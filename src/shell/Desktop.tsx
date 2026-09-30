@@ -821,6 +821,117 @@ export const Desktop: React.FC = () => {
     duplicateNode(nodeId);
   };
 
+  /** New Text Document — mirrors "New Folder" behaviour and enters rename mode. */
+  const handleCreateTextFile = useCallback(() => {
+    sound.playClick();
+    const id = createFile('Untitled.txt', DESKTOP_ID, 'Welcome to your new document.\n');
+    if (id) beginRename(id);
+  }, [createFile, beginRename]);
+
+  // ---------------------------------------------------------------------
+  // Menu definitions — ordered to match macOS Sonoma exactly
+  // ---------------------------------------------------------------------
+
+  const desktopMenuItems = useMemo<MenuNode[]>(
+    () => [
+      menuItem('New Folder', handleCreateFolder, { shortcut: '⇧⌘N' }),
+      menuItem('New Text Document', handleCreateTextFile),
+      menuSeparator(),
+      menuItem('Get Info', () => {
+        sound.playClick();
+        setGetInfoItem({
+          id: DESKTOP_ID,
+          type: 'folder',
+          name: 'Desktop',
+        });
+      }, { shortcut: '⌘I' }),
+      menuSeparator(),
+      menuSubmenu('Sort By', [
+        menuItem('Name', () => handleSortBy('name-asc')),
+        menuItem('Kind', () => handleSortBy('kind')),
+        menuItem('Date Modified', () => handleSortBy('date')),
+        menuItem('Size', () => handleSortBy('size')),
+        menuSeparator(),
+        menuItem('None', handleCleanUp),
+      ]),
+      menuItem('Clean Up', handleCleanUp, { shortcut: '⇧⌘O' }),
+      menuSeparator(),
+      menuItem('Change Desktop Background…', () => {
+        sound.playClick();
+        setIsDisplaySettingsOpen(true);
+      }),
+      menuItem('Edit Widgets…', () => {
+        sound.playClick();
+        setWidgetGalleryOpen(true);
+      }),
+      menuSeparator(),
+      menuItem('Show View Options', () => {
+        sound.playClick();
+        setIsViewOptionsOpen(true);
+      }, { shortcut: '⌘J' }),
+    ],
+    [
+      handleCreateFolder,
+      handleCreateTextFile,
+      handleSortBy,
+      handleCleanUp,
+      setWidgetGalleryOpen,
+    ]
+  );
+
+  const iconMenuItems = useMemo<MenuNode[]>(() => {
+    const item = iconMenuTarget;
+    if (!item) return [];
+
+    const isAppShortcut = item.type === 'app' && Boolean(item.appId);
+    const node = item.fileNode;
+
+    const head: MenuNode[] = [
+      menuItem('Open', () => handleItemOpen(item)),
+    ];
+
+    if (node?.type === 'file') {
+      head.push(
+        menuItem('Open in TextEdit', () => openWindow('textedit', node.name, { w: 720, h: 500 }, { fileId: node.id })),
+        menuItem('Open in Finder', () =>
+          openWindow('finder', 'Finder', { w: 760, h: 480 }, { folderId: node.parentId || DESKTOP_ID })
+        )
+      );
+    } else if (node?.type === 'folder') {
+      head.push(
+        menuItem('Open in New Window', () =>
+          openWindow('finder', `${node.name} copy`, { w: 760, h: 480 }, { folderId: node.id })
+        )
+      );
+    }
+
+    head.push(
+      menuItem('Quick Look', () => setQuickLookItem(item), { shortcut: 'Space' }),
+      menuSeparator()
+    );
+
+    if (node) {
+      head.push(
+        menuItem('Rename', () => beginRename(node.id)),
+        menuItem('Duplicate', () => handleDuplicateItem(node.id), { shortcut: '⌘D' }),
+        menuSeparator(),
+        menuItem('Move to Trash', () => handleDeleteItem(node.id), {
+          shortcut: '⌘⌫',
+          destructive: true,
+        })
+      );
+    } else if (isAppShortcut && item.appId) {
+      const appId = item.appId;
+      head.push(
+        menuItem('Remove from Desktop', () => handleRemoveAppShortcut(appId), { destructive: true })
+      );
+    }
+
+    head.push(menuSeparator(), menuItem('Get Info', () => setGetInfoItem(item), { shortcut: '⌘I' }));
+
+    return head;
+  }, [iconMenuTarget, handleItemOpen, beginRename, handleDuplicateItem, handleDeleteItem, handleRemoveAppShortcut, openWindow]);
+
   // Wallpaper definition
   const wallpaperDef = WALLPAPERS.find((w) => w.id === wallpaperId) || WALLPAPERS[0];
   const wallpaperStyle = customWallpaperUrl
