@@ -1,11 +1,160 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
-  Wifi, Bluetooth, Moon, BellOff, Sun, Volume2, VolumeX,
-  Music, Play, Pause, SkipForward, Sliders 
+  Wifi, Bluetooth, Moon, BellOff, Sun,
+  Music, Play, SkipForward, Sliders, Check, ChevronDown
 } from 'lucide-react';
-import { useThemeStore } from '../core/themeStore';
+import { useThemeStore, AUDIO_OUTPUT_DEVICES, getAudioOutputDevice } from '../core/themeStore';
 import { useProcessStore } from '../core/processStore';
 import { sound } from '../core/sound';
+import { MacSlider, VolumeGlyph } from './VolumeSlider';
+import { OUTPUT_DEVICE_ICONS } from './VolumeHUD';
+
+/* ------------------------------------------------------------------ *
+ * Sound — macOS audio output manager
+ * ------------------------------------------------------------------ */
+
+const AudioOutputModule: React.FC = () => {
+  const {
+    volume,
+    soundEnabled,
+    setMasterVolume,
+    setSoundEnabled,
+    outputDeviceId,
+    setOutputDevice,
+  } = useThemeStore();
+
+  const [isDeviceListOpen, setIsDeviceListOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const device = getAudioOutputDevice(outputDeviceId);
+  const DeviceIcon = OUTPUT_DEVICE_ICONS[device.kind];
+
+  /* Close the output popover on outside press or Escape, like AppKit popovers. */
+  useEffect(() => {
+    if (!isDeviceListOpen) return;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setIsDeviceListOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsDeviceListOpen(false);
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown, true);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown, true);
+      window.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [isDeviceListOpen]);
+
+  return (
+    <div
+      ref={wrapRef}
+      className="relative rounded-xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-neutral-800/70 p-3 shadow-sm space-y-2"
+    >
+      {/* Header: mute toggle · label · output device popover button */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => {
+            setSoundEnabled(!soundEnabled);
+            if (!soundEnabled) sound.playDockClick();
+          }}
+          aria-label={soundEnabled ? 'Mute output' : 'Unmute output'}
+          aria-pressed={!soundEnabled}
+          title={soundEnabled ? 'Mute' : 'Unmute'}
+          className={`shrink-0 rounded-md p-0.5 transition-colors hover:bg-black/8 dark:hover:bg-white/10 ${
+            soundEnabled ? '' : 'opacity-55'
+          }`}
+        >
+          <VolumeGlyph volume={volume} muted={!soundEnabled} size={16} />
+        </button>
+
+        <span className="flex-1 truncate text-[12px] font-semibold">Sound</span>
+
+        <button
+          onClick={() => {
+            sound.playClick();
+            setIsDeviceListOpen((open) => !open);
+          }}
+          aria-haspopup="listbox"
+          aria-expanded={isDeviceListOpen}
+          aria-label={`Output device: ${device.name}`}
+          title="Choose output device"
+          className={`flex min-w-0 max-w-[132px] items-center gap-1.5 rounded-full py-0.5 pl-1.5 pr-1 transition-colors ${
+            isDeviceListOpen
+              ? 'bg-black/12 dark:bg-white/18'
+              : 'hover:bg-black/8 dark:hover:bg-white/10'
+          }`}
+        >
+          <DeviceIcon size={12} className="shrink-0 opacity-60" />
+          <span className="min-w-0 flex-1 truncate text-[10px] font-medium leading-tight text-right">
+            {device.name}
+          </span>
+          <ChevronDown size={11} strokeWidth={2.5} className="shrink-0 opacity-45" />
+        </button>
+      </div>
+
+      {/* Master output level */}
+      <MacSlider
+        value={volume}
+        min={0}
+        max={100}
+        onChange={setMasterVolume}
+        disabled={false}
+        ariaLabel="Output volume"
+      />
+
+      {/* Output device list */}
+      {isDeviceListOpen && (
+        <div
+          role="listbox"
+          aria-label="Output devices"
+          className="mac-popover absolute right-3 top-[calc(100%-2px)] z-30 w-[248px]"
+        >
+          {AUDIO_OUTPUT_DEVICES.map((candidate) => {
+            const CandidateIcon = OUTPUT_DEVICE_ICONS[candidate.kind];
+            const isActive = candidate.id === outputDeviceId;
+
+            return (
+              <button
+                key={candidate.id}
+                role="option"
+                aria-selected={isActive}
+                disabled={!candidate.connected}
+                data-highlighted={isActive || undefined}
+                data-disabled={!candidate.connected || undefined}
+                onClick={() => {
+                  sound.playClick();
+                  setOutputDevice(candidate.id);
+                  setIsDeviceListOpen(false);
+                }}
+                className="macos-menu-item w-full"
+              >
+                <span className="macos-menu-icon">
+                  <CandidateIcon size={15} />
+                </span>
+                <span className="macos-menu-label flex flex-col items-start leading-tight">
+                  <span>{candidate.name}</span>
+                  {!candidate.connected && (
+                    <span className="text-[10px] opacity-55">Not Connected</span>
+                  )}
+                </span>
+                {isActive && <Check size={13} strokeWidth={2.6} className="shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ *
+ * Control Center
+ * ------------------------------------------------------------------ */
 
 export const ControlCenter: React.FC = () => {
   const {
