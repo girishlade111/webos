@@ -143,29 +143,41 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     const root = rootRef.current;
     if (!root) return;
 
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-menu-sub]'));
+    if (panels.length === 0) return;
+
+    /* The entrance keyframes animate `transform: scale()`, which would skew the
+       rects measured below. Suppress them for the duration of the measurement. */
+    const previousAnimations = panels.map((el) => el.style.animation);
+    panels.forEach((el) => {
+      el.style.animation = 'none';
+    });
+    void root.offsetHeight;
+
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    root.querySelectorAll<HTMLElement>('[data-menu-sub]').forEach((panel) => {
+    panels.forEach((panel, i) => {
       panel.style.left = '';
       panel.style.right = '';
       panel.style.top = '';
 
-      const rect = panel.getBoundingClientRect();
-      const hostRect = (panel.parentElement as HTMLElement)?.getBoundingClientRect();
-
-      if (rect.right > vw - EDGE) {
+      if (panel.getBoundingClientRect().right > vw - EDGE) {
         panel.style.left = 'auto';
         panel.style.right = 'calc(100% + 5px)';
       }
 
-      /* Nudge vertically with `top` — a transform would be clobbered by the
-         entrance keyframes, which hold `transform: scale(1)` via fill-mode. */
+      /* Nudge vertically with `top` rather than `transform`: the animation's
+         `both` fill-mode would otherwise pin `transform` to `scale(1)`. */
+      const host = panel.parentElement as HTMLElement | null;
       const after = panel.getBoundingClientRect();
-      if (hostRect && after.bottom > vh - EDGE) {
+      if (host && after.bottom > vh - EDGE) {
+        const hostRect = host.getBoundingClientRect();
         const shift = Math.min(after.bottom - (vh - EDGE), Math.max(0, after.top - hostRect.top));
         panel.style.top = `${-Math.round(shift)}px`;
       }
+
+      panel.style.animation = previousAnimations[i];
     });
   }, [openPath, placement.left, placement.top]);
 
