@@ -421,15 +421,17 @@ export const Desktop: React.FC = () => {
   // Inline rename (macOS "Rename" — the label becomes an editable field)
   // ---------------------------------------------------------------------
 
-  const beginRename = useCallback(
-    (id: string) => {
-      const target = desktopItems.find((item) => item.id === id);
-      if (!target?.fileNode) return;
-      setRenamingId(id);
-      setRenameDraft(target.fileNode.name);
-    },
-    [desktopItems]
-  );
+  /**
+   * Enter inline-rename mode for a node id.
+   * Reads through `getState()` because it is also called immediately after a
+   * folder/file is created, before this render's `nodes` snapshot catches up.
+   */
+  const beginRename = useCallback((id: string, seedName?: string) => {
+    const name = seedName ?? useFSStore.getState().nodes[id]?.name;
+    if (!name) return;
+    setRenamingId(id);
+    setRenameDraft(name);
+  }, []);
 
   const cancelRename = useCallback(() => {
     setRenamingId(null);
