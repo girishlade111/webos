@@ -964,6 +964,20 @@ export const Desktop: React.FC = () => {
         />
       )}
 
+      {/* Refresh progress indicator (triggered from the desktop context menu) */}
+      {isRefreshing && (
+        <div
+          className="pointer-events-none fixed top-1/2 left-1/2 z-[9990] -translate-x-1/2 -translate-y-1/2 animate-fade-in"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-center gap-2.5 rounded-full border border-white/15 bg-neutral-900/80 px-4 py-2.5 text-[13px] font-medium text-white shadow-2xl backdrop-blur-xl">
+            <RefreshCw size={14} className="animate-spin text-[var(--accent)]" />
+            Refreshing…
+          </div>
+        </div>
+      )}
+
       {/* macOS Sonoma / Sequoia Desktop Widgets Layer */}
       {desktopWidgets.length > 0 && (
         <div
@@ -995,6 +1009,7 @@ export const Desktop: React.FC = () => {
         const isSelected = selectedIds.includes(item.id);
         const isCurrentlyDragged = isDragging && draggedIds.includes(item.id);
         const isHorizontal = viewOptions.labelPosition === 'right' || viewOptions.viewStyle === 'list';
+        const isRenaming = renamingId === item.id;
 
         // Item metadata string (Show Item Info)
         let itemInfo = '';
