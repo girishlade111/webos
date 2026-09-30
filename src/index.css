@@ -73,7 +73,8 @@
    height, 5pt highlight radius, 11px separator block, 6px panel corner.
    ========================================================================== */
 .macos-menu,
-.mac-hud {
+.mac-hud,
+.mac-popover {
   --menu-bg: rgba(246, 246, 246, 0.72);
   --menu-border: rgba(0, 0, 0, 0.14);
   --menu-hairline: rgba(0, 0, 0, 0.13);
@@ -84,20 +85,29 @@
   --menu-destructive: #d0342c;
   --menu-shadow: 0 12px 34px -8px rgba(0, 0, 0, 0.32), 0 0 24px -6px rgba(0, 0, 0, 0.18);
 
+  position: fixed;
+  z-index: 9999;
+  padding: 5px;
+  border-radius: 6px;
   background-color: var(--menu-bg);
   border: 0.5px solid var(--menu-border);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: var(--menu-shadow);
   color: var(--menu-text);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'Helvetica Neue',
     system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1;
   letter-spacing: -0.006em;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+  animation: macosMenuIn 110ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
 .dark .macos-menu,
-.dark .mac-hud {
+.dark .mac-hud,
+.dark .mac-popover {
   --menu-bg: rgba(40, 40, 42, 0.62);
   --menu-border: rgba(255, 255, 255, 0.14);
   --menu-hairline: rgba(255, 255, 255, 0.16);
@@ -110,20 +120,18 @@
 }
 
 .macos-menu {
-  position: fixed;
-  z-index: 9999;
-  padding: 5px;
-  border-radius: 6px;
-  box-shadow: var(--menu-shadow);
-  font-size: 13px;
-  line-height: 1;
   overflow: visible;
-  animation: macosMenuIn 110ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
-/* Volume / brightness HUD — same material, larger corner radius + type scale. */
+/* In-panel popover (output device list) — same material, anchored to its card. */
+.mac-popover {
+  position: absolute;
+  z-index: 30;
+  border-radius: 8px;
+}
+
+/* Volume / brightness HUD — same material, larger corner radius. */
 .mac-hud {
-  position: fixed;
   z-index: 9600;
   border-radius: 16px;
   box-shadow:
