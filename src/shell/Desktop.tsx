@@ -71,7 +71,7 @@ export const Desktop: React.FC = () => {
   } = useThemeStore();
 
   // CRITICAL: Destructure 'nodes' to ensure component re-renders when files/folders are created or deleted!
-  const { nodes, getChildren, createFolder, createFile, moveToTrash, duplicateNode, initializeFS } = useFSStore();
+  const { nodes, getChildren, createFolder, moveToTrash, duplicateNode, renameNode, initializeFS } = useFSStore();
   const { openWindow } = useProcessStore();
   const { desktopWidgets, toggleDesktopWidget, setWidgetGalleryOpen } = useWidgetStore();
 
@@ -514,7 +514,7 @@ export const Desktop: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, desktopItems]);
+  }, [selectedIds, desktopItems, handleCreateFolder, handleCleanUp, handleRefreshDesktop]);
 
   // Pointer Down on an Icon (initiates selection or drag)
   const handleIconPointerDown = (e: React.PointerEvent, item: DesktopIconItem) => {
