@@ -1,0 +1,6 @@
+{
+  "name": "WebOS",
+  "description": "A virtual macOS-style desktop operating system running directly in the browser with window management, virtual file system, dock, spotlight, and bundled apps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --accent: #007aff;
+    --accent-hover: #0062cc;
+    --accent-rgb: 0, 122, 255;
+    
+    --desktop-bg: #1c1c1e;
+    --menu-bar-bg: rgba(255, 255, 255, 0.55);
+    --menu-bar-border: rgba(0, 0, 0, 0.12);
+    --menu-bar-text: #1d1d1f;
+    --menu-dropdown-bg: rgba(246, 246, 246, 0.88);
+    --menu-dropdown-border: rgba(0, 0, 0, 0.15);
+    
+    --dock-bg: rgba(255, 255, 255, 0.4);
+    --dock-border: rgba(255, 255, 255, 0.45);
+    
+    --window-bg: rgba(255, 255, 255, 0.92);
+    --window-header: rgba(240, 240, 242, 0.85);
+    --window-border: rgba(0, 0, 0, 0.15);
+    --window-text: #1d1d1f;
+    --window-subtext: #86868b;
+    --window-sidebar: rgba(235, 235, 240, 0.75);
+    
+    --shadow-window-focused: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.12);
+    --shadow-window-unfocused: 0 12px 30px -10px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+
+  .dark {
+    --desktop-bg: #000000;
+    --menu-bar-bg: rgba(30, 30, 30, 0.65);
+    --menu-bar-border: rgba(255, 255, 255, 0.12);
+    --menu-bar-text: #f5f5f7;
+    --menu-dropdown-bg: rgba(38, 38, 42, 0.88);
+    --menu-dropdown-border: rgba(255, 255, 255, 0.16);
+    
+    --dock-bg: rgba(30, 30, 35, 0.55);
+    --dock-border: rgba(255, 255, 255, 0.18);
+    
+    --window-bg: rgba(32, 32, 36, 0.94);
+    --window-header: rgba(42, 42, 46, 0.88);
+    --window-border: rgba(255, 255, 255, 0.14);
+    --window-text: #f5f5f7;
+    --window-subtext: #a1a1a6;
+    --window-sidebar: rgba(28, 28, 32, 0.82);
+    
+    --shadow-window-focused: 0 30px 70px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15);
+    --shadow-window-unfocused: 0 15px 35px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Glassmorphism utility */
+.glass-bar {
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+}
+
+.glass-panel {
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+}
+
+.glass-dock {
+  backdrop-filter: blur(35px) saturate(200%);
+  -webkit-backdrop-filter: blur(35px) saturate(200%);
+}
+
+/* Custom scrollbars matching macOS */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 140, 145, 0.35);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 140, 145, 0.55);
+}
+
+/* Disable text selection during drag operations */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Squircle border radius */
+.squircle {
+  border-radius: 22.37%;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-8px); }
+  30%, 60%, 90% { transform: translateX(8px); }
+}
+
+.animate-shake {
+  animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes dockBounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-16px); }
+  60% { transform: translateY(-6px); }
+}
+
+.animate-dock-bounce {
+  animation: dockBounce 0.65s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+@keyframes jiggle {
+  0% { transform: rotate(-1.2deg) scale(1.02); }
+  50% { transform: rotate(1.2deg) scale(1.02); }
+  100% { transform: rotate(-1.2deg) scale(1.02); }
+}
+
+@keyframes jiggleAlt {
+  0% { transform: rotate(1.2deg) scale(1.02); }
+  50% { transform: rotate(-1.2deg) scale(1.02); }
+  100% { transform: rotate(1.2deg) scale(1.02); }
+}
+
+.animate-jiggle {
+  animation: jiggle 0.26s infinite ease-in-out alternate;
+}
+
+.animate-jiggle-alt {
+  animation: jiggleAlt 0.29s infinite ease-in-out alternate;
+}
+
+.desktop-icon-lift {
+  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.5));
+}
