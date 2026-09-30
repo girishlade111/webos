@@ -283,11 +283,21 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
   },
 
   setSoundEnabled: (soundEnabled) => {
-    sound.setMuted(!soundEnabled);
     set((state) => {
-      const updated = { ...state, soundEnabled };
+      /* Unmuting from a zero level restores the last real level for this
+         device, the way macOS does after you drag the slider to silence. */
+      const restore =
+        soundEnabled && state.volume === 0
+          ? (state.volumeByDevice[state.outputDeviceId] ??
+            getAudioOutputDevice(state.outputDeviceId).defaultVolume)
+          : null;
+
+      if (restore !== null) sound.setVolume(restore);
+      sound.setMuted(!soundEnabled);
+
+      const updated: ThemeSettings = { ...state, soundEnabled, volume: restore ?? state.volume };
       saveState(updated);
-      return { soundEnabled };
+      return { soundEnabled, volume: updated.volume };
     });
   },
 
