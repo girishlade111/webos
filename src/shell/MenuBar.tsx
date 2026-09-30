@@ -18,7 +18,8 @@ export const MenuBar: React.FC = () => {
   const {
     activeMenuDropdown, setActiveMenuDropdown,
     toggleSpotlight, toggleControlCenter, toggleNotificationCenter,
-    wifiEnabled, setWifiEnabled, setOSState
+    wifiEnabled, setWifiEnabled, setOSState,
+    volume, soundEnabled, setControlCenterOpen
   } = useThemeStore();
 
   const { windows, focusedWindowId, openWindow, closeWindow, quitApp } = useProcessStore();
