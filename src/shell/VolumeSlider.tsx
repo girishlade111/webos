@@ -39,7 +39,7 @@ export const VolumeGlyph: React.FC<VolumeGlyphProps> = ({
   const level = volumeLevelOf(volume, muted);
 
   const Glyph =
-    level === 'muted' ? VolumeX : level === 'low' ? Volume1 : level === 'mid' ? Volume2 : Volume3;
+    level === 'muted' ? VolumeX : level === 'low' ? Volume1 : level === 'mid' ? Volume2 : Volume;
 
   const glyph = <Glyph size={size} strokeWidth={2} className={className} />;
 
