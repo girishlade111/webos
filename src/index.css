@@ -189,6 +189,14 @@
 .macos-menu-item.macos-menu-item--icon {
   padding-left: 8px;
 }
+/* Rows that carry a second line of detail (e.g. "Not Connected") grow to fit
+   instead of overflowing the fixed 22pt AppKit row height. */
+.macos-menu-item--tall {
+  height: auto;
+  min-height: 22px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
 .macos-menu-item[data-highlighted='true'] {
   background-color: var(--accent);
   color: #fff;
