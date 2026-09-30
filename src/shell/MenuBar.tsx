@@ -344,6 +344,26 @@ export const MenuBar: React.FC = () => {
           )}
         </div>
 
+        {/* Output Volume Glyph -> opens Control Center, scroll/pad to adjust */}
+        <button
+          onClick={() => setControlCenterOpen(true)}
+          onWheel={(e) => {
+            const { adjustVolume, showVolumeHud } = useThemeStore.getState();
+            adjustVolume(e.deltaY < 0 ? 6 : -6);
+            showVolumeHud();
+          }}
+          aria-label={`Output volume ${volume} percent${soundEnabled ? '' : ', muted'}`}
+          title={`Volume: ${volume}%${soundEnabled ? '' : ' (Muted)'} — F11 / F12 to adjust`}
+          className="flex h-6 w-6 items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10"
+        >
+          <VolumeGlyph
+            volume={volume}
+            muted={!soundEnabled}
+            size={14}
+            className={soundEnabled ? 'opacity-90' : 'opacity-40'}
+          />
+        </button>
+
         {/* Control Center Toggle */}
         <button
           onClick={toggleControlCenter}
