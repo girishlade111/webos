@@ -133,6 +133,11 @@ export const MenuBar: React.FC = () => {
       label: 'App Store...',
       action: () => openWindow('appstore'),
     },
+    {
+      id: 'sys-timemachine',
+      label: 'Time Machine...',
+      action: () => openWindow('timemachine'),
+    },
     { id: 'sys-div-2', label: '', divider: true },
     {
       id: 'sys-sleep',
