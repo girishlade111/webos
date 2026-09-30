@@ -548,7 +548,10 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
       </AnimatePresence>
 
       {/* Tunnel stage */}
-      <div className="absolute inset-x-0 top-[52px] bottom-[80px]">
+      <div
+        className="absolute inset-x-0 top-[52px] bottom-[80px] transition-[padding] duration-300 ease-out"
+        style={{ paddingRight: showChanges && selected ? 276 : 0 }}
+      >
         {snapshots.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3.5 px-8 text-center">
             <TimeMachineIcon size={84} className="opacity-95 drop-shadow-[0_10px_30px_rgba(90,150,255,0.45)]" />
@@ -571,20 +574,15 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
             </button>
           </div>
         ) : (
-          <div
-            className="absolute inset-x-0 top-[52px] bottom-[80px] transition-[padding] duration-300 ease-out"
-            style={{ paddingRight: showChanges && selected ? 276 : 0 }}
-          >
-            <Tunnel
-              snapshots={snapshots}
-              selectedIndex={Math.max(0, selectedIndex)}
-              onSelect={(i) => {
-                setPane('browse');
-                selectIndex(i);
-              }}
-              reducedMotion={reducedMotion}
-            />
-          </div>
+          <Tunnel
+            snapshots={snapshots}
+            selectedIndex={Math.max(0, selectedIndex)}
+            onSelect={(i) => {
+              setPane('browse');
+              selectIndex(i);
+            }}
+            reducedMotion={reducedMotion}
+          />
         )}
       </div>
 
@@ -711,8 +709,14 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
                             </p>
                           </div>
                           <div className="shrink-0 text-right">
-                            <p className="text-[11px] tabular-nums text-neutral-500 dark:text-neutral-400">
-                              +{formatBytes(incremental[snap.id] ?? 0)}
+                            <p
+                              className={`text-[11px] tabular-nums ${
+                                incremental[snap.id]
+                                  ? 'text-neutral-500 dark:text-neutral-400'
+                                  : 'text-neutral-400/70 dark:text-neutral-500/70'
+                              }`}
+                            >
+                              {incremental[snap.id] ? `+${formatBytes(incremental[snap.id])}` : 'No new data'}
                             </p>
                             <p className="text-[10px] tabular-nums text-neutral-400 dark:text-neutral-500">
                               {durationLabel(snap.durationMs)}
