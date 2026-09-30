@@ -9,6 +9,7 @@ import { WindowManager } from './shell/WindowManager';
 import { Dock } from './shell/Dock';
 import { Spotlight } from './shell/Spotlight';
 import { ControlCenter } from './shell/ControlCenter';
+import { VolumeHUD } from './shell/VolumeHUD';
 import { NotificationCenter } from './shell/NotificationCenter';
 import { MissionControl } from './shell/MissionControl';
 import { Launchpad } from './shell/Launchpad';
