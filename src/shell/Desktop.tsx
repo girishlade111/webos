@@ -123,10 +123,17 @@ export const Desktop: React.FC = () => {
   // Rubber-band selection state
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
 
-  // Context menus & Modals
-  const [desktopContextMenu, setDesktopContextMenu] = useState<Point | null>(null);
-  const [iconContextMenu, setIconContextMenu] = useState<{ point: Point; item: DesktopIconItem } | null>(null);
-  const [isSortSubmenuOpen, setIsSortSubmenuOpen] = useState<boolean>(false);
+  // Context menus (right-click) — rendered by the shared macOS ContextMenu
+  const desktopMenu = useContextMenu();
+  const iconMenu = useContextMenu();
+  const [iconMenuTarget, setIconMenuTarget] = useState<DesktopIconItem | null>(null);
+
+  // Inline rename state (macOS "Rename" on a desktop item)
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState<string>('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  // Modals
   const [isAddAppModalOpen, setIsAddAppModalOpen] = useState<boolean>(false);
   const [appSearchQuery, setAppSearchQuery] = useState<string>('');
   
@@ -451,8 +458,8 @@ export const Desktop: React.FC = () => {
     if (e.button !== 0) return;
     e.stopPropagation();
 
-    setDesktopContextMenu(null);
-    setIconContextMenu(null);
+    desktopMenu.close();
+    iconMenu.close();
 
     const isShiftOrCmd = e.metaKey || e.ctrlKey || e.shiftKey;
     let targetSelectedIds = [...selectedIds];
