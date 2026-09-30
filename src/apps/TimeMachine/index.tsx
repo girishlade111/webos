@@ -603,7 +603,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
               <Timeline
                 snapshots={snapshots}
                 selectedIndex={Math.max(0, selectedIndex)}
-                onSelect={setSelectedIndex}
+                onSelect={selectIndex}
               />
             ) : (
               <p className="py-3 text-center text-[11px] text-white/35">
