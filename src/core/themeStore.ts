@@ -156,6 +156,8 @@ const saveState = (state: ThemeSettings) => {
       soundEnabled: state.soundEnabled,
       brightness: state.brightness,
       volume: state.volume,
+      outputDeviceId: state.outputDeviceId,
+      volumeByDevice: state.volumeByDevice,
       username: state.username,
       userAvatar: state.userAvatar,
     };
