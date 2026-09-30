@@ -644,145 +644,118 @@ export const Desktop: React.FC = () => {
     window.addEventListener('pointerup', handlePointerUp);
   };
 
-  // Right-click on desktop canvas
+  // ---------------------------------------------------------------------
+  // Right-click entry points
+  // ---------------------------------------------------------------------
+
+  /** Right-click on empty desktop canvas. */
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     sound.playClick();
-    setIconContextMenu(null);
-    setIsSortSubmenuOpen(false);
-    setDesktopContextMenu({ 
-      x: Math.min(e.clientX, window.innerWidth - 260), 
-      y: Math.min(e.clientY, window.innerHeight - 380) 
-    });
+    setIconMenuTarget(null);
+    iconMenu.close();
+    desktopMenu.open(e);
   };
 
-  // Right-click on an icon
+  /** Right-click on a desktop icon. */
   const handleIconContextMenu = (e: React.MouseEvent, item: DesktopIconItem) => {
     e.preventDefault();
     e.stopPropagation();
     sound.playClick();
-    setDesktopContextMenu(null);
+    desktopMenu.close();
 
     if (!selectedIds.includes(item.id)) {
       setSelectedIds([item.id]);
     }
 
-    setIconContextMenu({
-      point: { x: Math.min(e.clientX, window.innerWidth - 240), y: Math.min(e.clientY, window.innerHeight - 300) },
-      item,
-    });
+    setIconMenuTarget(item);
+    iconMenu.open(e);
   };
 
-  // --- CONTEXT MENU ACTIONS (All guaranteed 100% working) ---
+  // ---------------------------------------------------------------------
+  // Context menu actions
+  // ---------------------------------------------------------------------
 
-  // 1. Create New Folder
-  const handleCreateFolder = () => {
+  /** New Folder — creates one and drops straight into rename, like macOS. */
+  const handleCreateFolder = useCallback(() => {
     sound.playClick();
-    const folderId = createFolder('Untitled Folder', DESKTOP_ID);
-    setDesktopContextMenu(null);
-  };
+    const id = createFolder('untitled folder', DESKTOP_ID);
+    if (id) beginRename(id);
+  }, [createFolder, beginRename]);
 
-  // 2. Create New Text File
-  const handleCreateFile = () => {
-    sound.playClick();
-    createFile('Untitled.txt', DESKTOP_ID, 'Welcome to your new document.\n');
-    setDesktopContextMenu(null);
-  };
-
-  // 3. Clean Up (Grid Align): Snaps all icons into clean columns with guaranteed vertical spacing
-  const handleCleanUp = () => {
+  /** Arrange → Clean Up: snap every icon into macOS right-to-left columns. */
+  const handleCleanUp = useCallback(() => {
     sound.playWindowSnap();
-    const cleanPositions = calculateDefaultPositions(desktopItems);
-    savePositions(cleanPositions);
-    setDesktopContextMenu(null);
-  };
+    savePositions(calculateDefaultPositions(desktopItems));
+  }, [desktopItems, calculateDefaultPositions, savePositions]);
 
-  // 4. Refresh Desktop
-  const handleRefreshDesktop = async () => {
+  /** Refresh: re-read the virtual filesystem and re-tile the desktop. */
+  const handleRefreshDesktop = useCallback(async () => {
     sound.playClick();
+    if (isRefreshing) return;
     setIsRefreshing(true);
-    setDesktopContextMenu(null);
     await initializeFS();
-    setTimeout(() => {
-      const cleanPositions = calculateDefaultPositions(desktopItems);
-      savePositions(cleanPositions);
+    window.setTimeout(() => {
+      savePositions(calculateDefaultPositions(desktopItems));
       setIsRefreshing(false);
       sound.playWindowSnap();
-    }, 400);
-  };
+    }, 420);
+  }, [isRefreshing, initializeFS, desktopItems, calculateDefaultPositions, savePositions]);
 
-  // 5. Sort By: Name, Kind, Date, or Size
-  const handleSortBy = (criteria: 'name-asc' | 'name-desc' | 'kind' | 'size' | 'date') => {
-    sound.playWindowSnap();
-    const sorted = [...desktopItems].sort((a, b) => {
-      if (criteria === 'kind') {
-        const order = { drive: 1, app: 2, folder: 3, file: 4 };
-        const diff = (order[a.type] || 5) - (order[b.type] || 5);
-        if (diff !== 0) return diff;
-        return a.name.localeCompare(b.name);
-      }
-      if (criteria === 'name-desc') {
-        return b.name.localeCompare(a.name);
-      }
-      if (criteria === 'size') {
-        const sizeA = a.fileNode?.size || 0;
-        const sizeB = b.fileNode?.size || 0;
-        return sizeB - sizeA;
-      }
-      if (criteria === 'date') {
-        const dateA = a.fileNode?.modifiedAt || 0;
-        const dateB = b.fileNode?.modifiedAt || 0;
-        return dateB - dateA;
-      }
-      return a.name.localeCompare(b.name);
-    });
+  /** Arrange → Sort By. */
+  const handleSortBy = useCallback(
+    (criteria: 'name-asc' | 'name-desc' | 'kind' | 'size' | 'date') => {
+      sound.playWindowSnap();
+      const rank: Record<DesktopIconItem['type'], number> = { drive: 0, app: 1, folder: 2, file: 3 };
+      const sorted = [...desktopItems].sort((a, b) => {
+        switch (criteria) {
+          case 'name-desc':
+            return b.name.localeCompare(a.name);
+          case 'kind':
+            return rank[a.type] - rank[b.type] || a.name.localeCompare(b.name);
+          case 'size':
+            return (b.fileNode?.size ?? 0) - (a.fileNode?.size ?? 0);
+          case 'date':
+            return (b.fileNode?.modifiedAt ?? 0) - (a.fileNode?.modifiedAt ?? 0);
+          default:
+            return a.name.localeCompare(b.name);
+        }
+      });
+      savePositions(calculateDefaultPositions(sorted));
+    },
+    [desktopItems, calculateDefaultPositions, savePositions]
+  );
 
-    const newPositions = calculateDefaultPositions(sorted);
-    savePositions(newPositions);
-    setDesktopContextMenu(null);
-    setIsSortSubmenuOpen(false);
-  };
-
-  // 6. Quick Icon Resizing helper (S, M, L, XL)
+  /** Quick icon resizing helper (S, M, L, XL) used by View Options. */
   const handleSetIconSize = (size: number) => {
     sound.playClick();
     setViewOptions((prev) => ({ ...prev, iconSize: size }));
-    // Immediately calculate non-overlapping cell dimensions and update positions
     const newCH = Math.max(126, Math.round((size + 80) * viewOptions.gridSpacing));
     const newCW = Math.max(96, Math.round(size * 1.9 * viewOptions.gridSpacing));
-    const nextPositions = calculateDefaultPositions(desktopItems, newCW, newCH);
-    savePositions(nextPositions);
+    savePositions(calculateDefaultPositions(desktopItems, newCW, newCH));
   };
 
-  // 7. Add App shortcut to desktop
   const handleAddAppShortcut = (appId: string) => {
     sound.playClick();
     if (!desktopAppIds.includes(appId)) {
       setDesktopAppIds((prev) => [...prev, appId]);
     }
     setIsAddAppModalOpen(false);
-    setDesktopContextMenu(null);
   };
 
-  // Remove App shortcut from desktop
   const handleRemoveAppShortcut = (appId: string) => {
     sound.playClick();
     setDesktopAppIds((prev) => prev.filter((id) => id !== appId));
-    setIconContextMenu(null);
   };
 
-  // Delete file/folder item
   const handleDeleteItem = (nodeId: string) => {
-    sound.playClick();
+    sound.playTrash();
     moveToTrash(nodeId);
-    setIconContextMenu(null);
   };
 
-  // Duplicate file/folder item
   const handleDuplicateItem = (nodeId: string) => {
     sound.playClick();
     duplicateNode(nodeId);
-    setIconContextMenu(null);
   };
 
   // Wallpaper definition
