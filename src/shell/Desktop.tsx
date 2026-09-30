@@ -417,12 +417,55 @@ export const Desktop: React.FC = () => {
     [openWindow]
   );
 
-  // Keyboard shortcut listener (Spacebar = Quick Look, ⌘I = Get Info, ⌘J = View Options)
+  // ---------------------------------------------------------------------
+  // Inline rename (macOS "Rename" — the label becomes an editable field)
+  // ---------------------------------------------------------------------
+
+  const beginRename = useCallback(
+    (id: string) => {
+      const target = desktopItems.find((item) => item.id === id);
+      if (!target?.fileNode) return;
+      setRenamingId(id);
+      setRenameDraft(target.fileNode.name);
+    },
+    [desktopItems]
+  );
+
+  const cancelRename = useCallback(() => {
+    setRenamingId(null);
+    setRenameDraft('');
+  }, []);
+
+  const commitRename = useCallback(() => {
+    if (renamingId) {
+      const next = renameDraft.trim();
+      const current = desktopItems.find((item) => item.id === renamingId)?.fileNode?.name;
+      if (next && next !== current) {
+        sound.playClick();
+        renameNode(renamingId, next);
+      }
+    }
+    cancelRename();
+  }, [renamingId, renameDraft, desktopItems, renameNode, cancelRename]);
+
+  // Select the whole basename once the rename field appears.
+  useEffect(() => {
+    if (!renamingId) return;
+    const input = renameInputRef.current;
+    if (!input) return;
+    input.focus();
+    const dot = input.value.lastIndexOf('.');
+    input.setSelectionRange(0, dot > 0 ? dot : input.value.length);
+  }, [renamingId]);
+
+  // Keyboard shortcuts — Space Quick Look, ⌘I Info, ⌘J View Options,
+  // ⇧⌘N New Folder, ⇧⌘O Clean Up, ⌘R Refresh.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') {
-        return;
-      }
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      const mod = e.metaKey || e.ctrlKey;
 
       if (e.code === 'Space' && selectedIds.length > 0) {
         e.preventDefault();
@@ -431,21 +474,41 @@ export const Desktop: React.FC = () => {
           sound.playClick();
           setQuickLookItem((prev) => (prev ? null : selectedItem));
         }
+        return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'i' && selectedIds.length > 0) {
+      if (mod && e.key.toLowerCase() === 'i' && selectedIds.length > 0) {
         e.preventDefault();
         const selectedItem = desktopItems.find((item) => item.id === selectedIds[0]);
         if (selectedItem) {
           sound.playClick();
           setGetInfoItem(selectedItem);
         }
+        return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'j') {
+      if (mod && e.key.toLowerCase() === 'j') {
         e.preventDefault();
         sound.playClick();
         setIsViewOptionsOpen((prev) => !prev);
+        return;
+      }
+
+      if (mod && e.shiftKey && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        handleCreateFolder();
+        return;
+      }
+
+      if (mod && e.shiftKey && e.key.toLowerCase() === 'o') {
+        e.preventDefault();
+        handleCleanUp();
+        return;
+      }
+
+      if (mod && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        void handleRefreshDesktop();
       }
     };
 
