@@ -80,8 +80,7 @@
   --menu-shortcut: rgba(0, 0, 0, 0.42);
   --menu-separator: rgba(0, 0, 0, 0.13);
   --menu-destructive: #d0342c;
-  --menu-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 12px 34px -8px rgba(0, 0, 0, 0.32),
-    0 0 24px -6px rgba(0, 0, 0, 0.18);
+  --menu-shadow: 0 12px 34px -8px rgba(0, 0, 0, 0.32), 0 0 24px -6px rgba(0, 0, 0, 0.18);
 
   position: fixed;
   z-index: 9999;
@@ -113,22 +112,15 @@
   --menu-shortcut: rgba(255, 255, 255, 0.42);
   --menu-separator: rgba(255, 255, 255, 0.14);
   --menu-destructive: #ff6961;
-  --menu-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 18px 44px -10px rgba(0, 0, 0, 0.68),
-    0 0 30px -8px rgba(0, 0, 0, 0.4);
+  --menu-shadow: 0 18px 44px -10px rgba(0, 0, 0, 0.68), 0 0 30px -8px rgba(0, 0, 0, 0.4);
 }
 
-/* Panel interior — holds the item stack */
+/* Panel interior — holds the item stack.
+   Deliberately NOT a scroll container: submenus are absolutely positioned
+   descendants of this element and must never be clipped by it. */
 .macos-menu-panel {
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 24px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: none;
-}
-.macos-menu-panel::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
 /* A single selectable row */
@@ -236,7 +228,6 @@
   position: absolute;
   left: calc(100% + 5px);
   top: 0;
-  min-width: max-content;
   animation: macosMenuIn 90ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
   transform-origin: top left;
 }
