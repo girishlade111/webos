@@ -89,6 +89,7 @@ export const MacSlider: React.FC<MacSliderProps> = ({
   const trackRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   const span = max - min || 1;
   const ratio = Math.max(0, Math.min(1, (value - min) / span));
