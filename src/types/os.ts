@@ -4,6 +4,19 @@ export type OSState = 'booting' | 'locked' | 'desktop' | 'sleeping' | 'shutdown'
 
 export type AccentColor = 'blue' | 'purple' | 'pink' | 'red' | 'orange' | 'yellow' | 'green' | 'graphite';
 
+/** Physical/logical destination the system audio is routed to. */
+export type AudioOutputKind = 'speakers' | 'headphones' | 'display' | 'airplay';
+
+export interface AudioOutputDevice {
+  id: string;
+  name: string;
+  kind: AudioOutputKind;
+  /** Default level applied the first time this device becomes active. */
+  defaultVolume: number;
+  /** Marks devices that are connected rather than merely available. */
+  connected: boolean;
+}
+
 export interface ThemeSettings {
   mode: 'dark' | 'light';
   accentColor: AccentColor;
@@ -15,6 +28,10 @@ export interface ThemeSettings {
   soundEnabled: boolean;
   brightness: number; // 0 - 100
   volume: number; // 0 - 100
+  /** Currently selected audio output device id. */
+  outputDeviceId: string;
+  /** macOS remembers a separate master level per output device. */
+  volumeByDevice: Record<string, number>;
   username: string;
   userAvatar: string;
   minimizeEffect?: 'genie' | 'scale';
