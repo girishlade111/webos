@@ -131,9 +131,9 @@ const AudioOutputModule: React.FC = () => {
                   setOutputDevice(candidate.id);
                   setIsDeviceListOpen(false);
                 }}
-                className="macos-menu-item w-full"
+                className={`macos-menu-item w-full${candidate.connected ? '' : ' macos-menu-item--tall'}`}
               >
-                <span className="macos-menu-icon">
+                <span className="macos-menu-icon self-center">
                   <CandidateIcon size={15} />
                 </span>
                 <span className="macos-menu-label flex flex-col items-start leading-tight">
@@ -142,7 +142,7 @@ const AudioOutputModule: React.FC = () => {
                     <span className="text-[10px] opacity-55">Not Connected</span>
                   )}
                 </span>
-                {isActive && <Check size={13} strokeWidth={2.6} className="shrink-0" />}
+                {isActive && <Check size={13} strokeWidth={2.6} className="shrink-0 self-center" />}
               </button>
             );
           })}
