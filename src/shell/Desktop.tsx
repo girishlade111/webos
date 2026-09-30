@@ -71,7 +71,7 @@ export const Desktop: React.FC = () => {
   } = useThemeStore();
 
   // CRITICAL: Destructure 'nodes' to ensure component re-renders when files/folders are created or deleted!
-  const { nodes, getChildren, createFolder, moveToTrash, duplicateNode, renameNode, initializeFS } = useFSStore();
+  const { nodes, getChildren, createFolder, createFile, moveToTrash, duplicateNode, renameNode, initializeFS } = useFSStore();
   const { openWindow } = useProcessStore();
   const { desktopWidgets, toggleDesktopWidget, setWidgetGalleryOpen } = useWidgetStore();
 
