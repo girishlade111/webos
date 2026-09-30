@@ -531,3 +531,50 @@ export const StickiesIcon: React.FC<IconProps> = ({ size = 64, className = '' })
     <line x1="14" y1="36" x2="34" y2="36" stroke="#ca8a04" strokeWidth="2.5" strokeLinecap="round" />
   </svg>
 );
+
+// Time Machine Icon — circular "rewind" arrow sweeping a clock face
+export const TimeMachineIcon: React.FC<IconProps> = ({ size = 64, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={`shadow-lg rounded-2xl ${className}`}>
+    <defs>
+      <linearGradient id="tm_bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#3b82f6" />
+        <stop offset="0.55" stopColor="#2563eb" />
+        <stop offset="1" stopColor="#1e3a8a" />
+      </linearGradient>
+      <linearGradient id="tm_ring" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#ffffff" />
+        <stop offset="1" stopColor="#dbeafe" />
+      </linearGradient>
+      <radialGradient id="tm_face" cx="0.5" cy="0.35" r="0.75">
+        <stop stopColor="#1e3a8a" />
+        <stop offset="1" stopColor="#0b1a3d" />
+      </radialGradient>
+    </defs>
+    <rect width="64" height="64" rx="14.3" fill="url(#tm_bg)" />
+    <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="13.55" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" />
+    {/* Clock face */}
+    <circle cx="32" cy="32" r="20" fill="url(#tm_face)" />
+    <circle cx="32" cy="32" r="20" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+    {/* Hour ticks */}
+    <g stroke="rgba(255,255,255,0.55)" strokeWidth="1.4" strokeLinecap="round">
+      <line x1="32" y1="15.5" x2="32" y2="19" />
+      <line x1="48.5" y1="32" x2="45" y2="32" />
+      <line x1="32" y1="48.5" x2="32" y2="45" />
+      <line x1="15.5" y1="32" x2="19" y2="32" />
+    </g>
+    {/* Hands: minute hand back to the past, hour hand forward */}
+    <path d="M32 32L32 22" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" />
+    <path d="M32 32L39.5 35.5" stroke="#93c5fd" strokeWidth="2.4" strokeLinecap="round" />
+    <circle cx="32" cy="32" r="1.9" fill="#ffffff" />
+    {/* Rewind arc with arrow head */}
+    <path
+      d="M13.4 24.6A20 20 0 1 1 12 38"
+      stroke="url(#tm_ring)"
+      strokeWidth="4.2"
+      strokeLinecap="round"
+      fill="none"
+    />
+    <path d="M5.6 20.8L13.9 25.6L6.9 30.4Z" fill="url(#tm_ring)" />
+  </svg>
+);
+
