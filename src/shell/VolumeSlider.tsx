@@ -166,6 +166,8 @@ export const MacSlider: React.FC<MacSliderProps> = ({
   };
 
   const active = dragging || (hovering && !disabled);
+  /* Knob centre travels from KNOB/2 to trackWidth - KNOB/2, matching AppKit. */
+  const knobOffset = `calc(${ratio * 100}% - ${ratio * KNOB}px)`;
 
   return (
     <div
@@ -180,6 +182,8 @@ export const MacSlider: React.FC<MacSliderProps> = ({
       data-dragging={dragging || undefined}
       onPointerDown={handlePointerDown}
       onKeyDown={handleKeyDown}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
       className={`group relative flex h-5 w-full touch-none select-none items-center outline-none ${
@@ -187,15 +191,13 @@ export const MacSlider: React.FC<MacSliderProps> = ({
       } ${className}`}
     >
       {/* Track */}
-      <div
-        ref={trackRef}
-        className="mac-slider-track relative h-1 w-full overflow-hidden rounded-full"
-      >
-        {/* Fill — animates while idle, tracks the pointer 1:1 mid-drag */}
+      <div ref={trackRef} className="mac-slider-track relative h-1 w-full overflow-hidden rounded-full">
+        {/* Fill ends at the knob's leading edge; animates while idle,
+            tracks the pointer 1:1 mid-drag. */}
         <div
           className="mac-slider-fill absolute inset-y-0 left-0 rounded-full"
           style={{
-            width: `calc(${ratio * 100}% + ${ratio * KNOB}px)`,
+            width: knobOffset,
             transition: dragging ? 'none' : 'width 180ms cubic-bezier(0.32, 0.72, 0, 1)',
           }}
         />
@@ -204,24 +206,18 @@ export const MacSlider: React.FC<MacSliderProps> = ({
       {/* Knob */}
       <div
         aria-hidden
-        className="mac-slider-knob pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full bg-white"
+        data-focused={focused && !disabled ? 'true' : undefined}
+        className="mac-slider-knob pointer-events-none absolute top-1/2 rounded-full bg-white"
         style={{
           width: KNOB,
           height: KNOB,
-          left: `calc(${ratio * 100}% - ${ratio * KNOB}px)`,
-          transform: `translate(-50%, -50%) scale(${active ? 1.14 : 1})`,
+          left: knobOffset,
           marginLeft: KNOB / 2,
+          transform: `translate(-50%, -50%) scale(${active ? 1.14 : 1})`,
           transition: dragging
             ? 'none'
             : 'transform 180ms cubic-bezier(0.32, 0.72, 0, 1), left 180ms cubic-bezier(0.32, 0.72, 0, 1)',
         }}
-      />
-
-      {/* Focus ring — macOS draws a soft halo when the slider takes keyboard focus */}
-      <div
-        aria-hidden
-        className="mac-slider-focus pointer-events-none absolute inset-0 rounded-full opacity-0 transition-opacity duration-150"
-        style={{ opacity: undefined }}
       />
     </div>
   );
