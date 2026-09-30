@@ -281,6 +281,7 @@ interface TimeMachineState {
   diffSnapshot: (snapshotId: string) => SnapshotDiff | null;
   deleteSnapshot: (snapshotId: string) => Promise<void>;
   deleteAllSnapshots: () => Promise<void>;
+  pruneStorage: () => Promise<number>;
   updateConfig: (patch: Partial<TimeMachineConfig>) => void;
 }
 
@@ -614,8 +615,14 @@ export const useTimeMachineStore = create<TimeMachineState>((set, get) => ({
     sound.playTrash();
   },
 
-  updateConfig: (patch) => {
-    const config = { ...get().config, ...patch };
+  pruneStorage: async () => {
+    set({ phase: 'pruning', progress: 0.4 });
+    const removed = await garbageCollect(get().snapshots);
+    set({ phase: 'idle', progress: 0, lastPrunedAt: Date.now(), revision: get().revision + 1 });
+    return removed;
+  },
+
+  updateConfig: (patch) => {    const config = { ...get().config, ...patch };
     persistConfig(config);
     set({ config });
   },
