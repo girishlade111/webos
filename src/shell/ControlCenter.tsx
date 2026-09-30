@@ -83,7 +83,7 @@ const AudioOutputModule: React.FC = () => {
           aria-expanded={isDeviceListOpen}
           aria-label={`Output device: ${device.name}`}
           title="Choose output device"
-          className={`flex min-w-0 max-w-[132px] items-center gap-1.5 rounded-full py-0.5 pl-1.5 pr-1 transition-colors ${
+          className={`flex min-w-0 max-w-[152px] items-center gap-1.5 rounded-full py-0.5 pl-1.5 pr-1 transition-colors ${
             isDeviceListOpen
               ? 'bg-black/12 dark:bg-white/18'
               : 'hover:bg-black/8 dark:hover:bg-white/10'
