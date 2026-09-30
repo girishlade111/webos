@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Wifi, Battery, Search, Sliders, Moon, RotateCcw, 
+  Wifi, Search, Sliders, Moon, RotateCcw, 
   Power, Lock, Settings as SettingsIcon, Info 
 } from 'lucide-react';
 import { AppleLogo } from '../assets/appIcons';
 import { AboutMacDialog } from './AboutMacDialog';
+import { BatteryGlyph } from './BatteryGlyph';
+import { BatteryPopover } from './BatteryPopover';
 import { useThemeStore } from '../core/themeStore';
+import { useBatteryStore } from '../core/batteryStore';
 import { useProcessStore } from '../core/processStore';
 import { APP_REGISTRY } from '../core/appRegistry';
 import { sound } from '../core/sound';
@@ -21,9 +24,8 @@ export const MenuBar: React.FC = () => {
   const { windows, focusedWindowId, openWindow, closeWindow, quitApp } = useProcessStore();
 
   const [clockStr, setClockStr] = useState<string>('');
-  const [batteryLevel, setBatteryLevel] = useState<number>(98);
-  const [isCharging, setIsCharging] = useState<boolean>(true);
   const [isWifiPopoverOpen, setIsWifiPopoverOpen] = useState<boolean>(false);
+  const [isBatteryPopoverOpen, setIsBatteryPopoverOpen] = useState<boolean>(false);
   const [isAboutMacOpen, setIsAboutMacOpen] = useState<boolean>(false);
 
   const menuBarRef = useRef<HTMLDivElement>(null);
@@ -42,21 +44,11 @@ export const MenuBar: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Try real Battery API if present
-  useEffect(() => {
-    if (typeof navigator !== 'undefined' && 'getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
-        setBatteryLevel(Math.round(battery.level * 100));
-        setIsCharging(battery.charging);
-        battery.addEventListener('levelchange', () => {
-          setBatteryLevel(Math.round(battery.level * 100));
-        });
-        battery.addEventListener('chargingchange', () => {
-          setIsCharging(battery.charging);
-        });
-      }).catch(() => {});
-    }
-  }, []);
+  // Track the real system battery via the Battery Status API
+  const { level: batteryLevel, charging: isCharging, hasBattery, showPercentage, attach } = useBatteryStore();
+  const batteryPercent = Math.round(batteryLevel * 100);
+
+  useEffect(() => attach(), [attach]);
 
   // Close menus on outside click or Escape
   useEffect(() => {
@@ -64,12 +56,14 @@ export const MenuBar: React.FC = () => {
       if (menuBarRef.current && !menuBarRef.current.contains(e.target as Node)) {
         setActiveMenuDropdown(null);
         setIsWifiPopoverOpen(false);
+        setIsBatteryPopoverOpen(false);
       }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setActiveMenuDropdown(null);
         setIsWifiPopoverOpen(false);
+        setIsBatteryPopoverOpen(false);
       }
     };
     window.addEventListener('mousedown', handleGlobalClick);
@@ -139,6 +133,7 @@ export const MenuBar: React.FC = () => {
     } else {
       setActiveMenuDropdown(menuId);
       setIsWifiPopoverOpen(false);
+      setIsBatteryPopoverOpen(false);
     }
   };
 
@@ -283,11 +278,46 @@ export const MenuBar: React.FC = () => {
 
       {/* Right Status Controls */}
       <div className="flex items-center gap-1">
+        {/* Battery Indicator -> Click opens Battery popover */}
+        {hasBattery && (
+          <div className="relative">
+            <button
+              onClick={() => {
+                sound.playClick();
+                setIsBatteryPopoverOpen(!isBatteryPopoverOpen);
+                setIsWifiPopoverOpen(false);
+                setActiveMenuDropdown(null);
+              }}
+              aria-haspopup="dialog"
+              aria-expanded={isBatteryPopoverOpen}
+              aria-label={`Battery ${batteryPercent} percent${isCharging ? ', charging' : ''}`}
+              title={`Battery ${batteryPercent}%${isCharging ? ' (Charging)' : ''}`}
+              className={`flex h-6 items-center gap-1 rounded px-1.5 transition-colors ${
+                isBatteryPopoverOpen
+                  ? 'bg-black/15 dark:bg-white/15'
+                  : 'hover:bg-black/10 dark:hover:bg-white/10'
+              }`}
+            >
+              {showPercentage && (
+                <span className="text-[11px] font-medium leading-none tabular-nums">
+                  {batteryPercent}%
+                </span>
+              )}
+              <BatteryGlyph level={batteryLevel} charging={isCharging} size={11} />
+            </button>
+
+            {isBatteryPopoverOpen && (
+              <BatteryPopover onClose={() => setIsBatteryPopoverOpen(false)} />
+            )}
+          </div>
+        )}
+
         {/* Wi-Fi Popover Toggle */}
         <div className="relative">
           <button
             onClick={() => {
               setIsWifiPopoverOpen(!isWifiPopoverOpen);
+              setIsBatteryPopoverOpen(false);
               setActiveMenuDropdown(null);
             }}
             className="flex h-6 items-center justify-center rounded px-1.5 hover:bg-black/10 dark:hover:bg-white/10"
@@ -314,11 +344,14 @@ export const MenuBar: React.FC = () => {
           )}
         </div>
 
-        {/* Battery */}
-        <div className="flex items-center gap-1 px-1.5 text-[11px] tabular-nums font-mono opacity-80" title={`${batteryLevel}% ${isCharging ? 'Charging' : ''}`}>
-          <span>{batteryLevel}%</span>
-          <Battery size={14} />
-        </div>
+        {/* Control Center Toggle */}
+        <button
+          onClick={toggleControlCenter}
+          className="flex h-6 w-6 items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10"
+          title="Control Center"
+        >
+          <Sliders size={13} />
+        </button>
 
         {/* Spotlight Icon */}
         <button
@@ -327,15 +360,6 @@ export const MenuBar: React.FC = () => {
           title="Spotlight Search (Cmd+Space)"
         >
           <Search size={13} />
-        </button>
-
-        {/* Control Center Toggle */}
-        <button
-          onClick={toggleControlCenter}
-          className="flex h-6 w-6 items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10"
-          title="Control Center"
-        >
-          <Sliders size={13} />
         </button>
 
         {/* Live Clock -> Click opens Notification Center */}
