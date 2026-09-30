@@ -99,6 +99,11 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     }, SUBMENU_CLOSE_DELAY);
   }, [clearCloseTimer]);
 
+  /* Move focus into the menu so arrow keys / Enter / Escape reach it. */
+  useLayoutEffect(() => {
+    rootRef.current?.focus({ preventScroll: true });
+  }, []);
+
   /* Reset transient state whenever a new menu is opened at a new spot. */
   useEffect(() => {
     setOpenPath([]);
