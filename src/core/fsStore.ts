@@ -208,6 +208,10 @@ interface FSState {
   getChildren: (parentId: string) => FSNode[];
   getNode: (id: string) => FSNode | undefined;
   getNodePath: (id: string) => string;
+  /** Wholesale replacement of the node map — used by Time Machine volume restores. */
+  replaceAllNodes: (nodes: Record<string, FSNode>) => void;
+  /** Shallow overlay of nodes onto the live tree — used by selective file restores. */
+  mergeNodes: (nodes: Record<string, FSNode>) => void;
   exportFile: (id: string) => void;
   importFile: (file: File, targetParentId: string) => Promise<string>;
   resetFS: () => Promise<void>;
@@ -471,6 +475,22 @@ export const useFSStore = create<FSState>((set, get) => ({
       parts.unshift(curr.name);
     }
     return '/' + parts.join('/');
+  },
+
+  replaceAllNodes: (nodes) => {
+    set((state) => {
+      const next = { ...nodes };
+      idbSet(FS_STORAGE_KEY, next);
+      return { nodes: next, selectedNodeIds: [], clipboard: null };
+    });
+  },
+
+  mergeNodes: (nodes) => {
+    set((state) => {
+      const next = { ...state.nodes, ...nodes };
+      idbSet(FS_STORAGE_KEY, next);
+      return { nodes: next };
+    });
   },
 
   exportFile: (id) => {
