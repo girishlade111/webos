@@ -7,13 +7,12 @@ interface BatteryGlyphProps {
   className?: string;
 }
 
-const BODY = { x: 1, y: 0.75, width: 19.9, height: 10.5, rx: 2.5 };
-const NUB = { x: 21.25, y: 4.05, width: 1.75, height: 3.9, rx: 0.8 };
-const INNER = { x: 1.72, y: 1.47, width: 18.46, height: 9.06, rx: 1.9 };
+const BODY = { x: 1, y: 0.75, width: 19.5, height: 10.5, rx: 2.5 };
+const NUB = { x: 21.5, y: 4.1, width: 1.6, height: 3.8, rx: 0.7 };
+const INNER = { x: 1.725, y: 1.475, width: 18.05, height: 9.05, rx: 1.85 };
 const STROKE_WIDTH = 1.15;
 
-const BOLT_PATH =
-  'M11.6 2.25L8.4 6.7h2.3l-0.5 3.15L13.5 5.4h-2.3L11.6 2.25z';
+const BOLT_PATH = 'M11.4 2.6L8.5 6.6h2.1l-0.45 2.85L13 5.4h-2.1z';
 
 export const BatteryGlyph: React.FC<BatteryGlyphProps> = ({
   level,
