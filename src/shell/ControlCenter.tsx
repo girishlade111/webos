@@ -164,8 +164,6 @@ export const ControlCenter: React.FC = () => {
     doNotDisturb, setDoNotDisturb,
     mode, toggleMode,
     brightness, setBrightness,
-    volume, setVolume,
-    soundEnabled, setSoundEnabled,
     username, userAvatar,
   } = useThemeStore();
   const { openWindow } = useProcessStore();
