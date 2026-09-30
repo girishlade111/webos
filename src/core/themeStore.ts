@@ -44,6 +44,10 @@ interface ThemeStoreState extends ThemeSettings {
   toggleSound: () => void;
   setBrightness: (brightness: number) => void;
   setVolume: (volume: number) => void;
+  setMasterVolume: (volume: number) => void;
+  adjustVolume: (delta: number) => void;
+  setOutputDevice: (id: string) => void;
+  showVolumeHud: () => void;
   setUserInfo: (username: string, avatar?: string) => void;
   setWifiEnabled: (enabled: boolean) => void;
   setBluetoothEnabled: (enabled: boolean) => void;
