@@ -1282,7 +1282,17 @@ export const Desktop: React.FC = () => {
           </label>
 
           {/* Reset button */}
-          <div className="pt-1 border-t border-white/10 flex justify-end">
+          <div className="pt-1 border-t border-white/10 flex items-center justify-between gap-2">
+            <button
+              onClick={() => {
+                sound.playClick();
+                setIsViewOptionsOpen(false);
+                setIsAddAppModalOpen(true);
+              }}
+              className="px-3 py-1 rounded-lg text-[var(--accent)] hover:bg-white/10 text-xs cursor-pointer"
+            >
+              Add App Shortcut…
+            </button>
             <button
               onClick={() => {
                 sound.playClick();
