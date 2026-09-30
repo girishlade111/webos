@@ -1155,6 +1155,7 @@ export const Desktop: React.FC = () => {
           </div>
         );
       })}
+
       {/* Desktop canvas context menu (right-click on empty desktop) */}
       {desktopMenu.isOpen && (
         <ContextMenu
