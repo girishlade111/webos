@@ -29,6 +29,7 @@ const RemindersComponent = lazy(() => import('../apps/Reminders').then((m) => ({
 const PhotoBoothComponent = lazy(() => import('../apps/PhotoBooth').then((m) => ({ default: m.PhotoBoothApp })));
 const DiskUtilityComponent = lazy(() => import('../apps/DiskUtility').then((m) => ({ default: m.DiskUtilityApp })));
 const StickiesComponent = lazy(() => import('../apps/Stickies').then((m) => ({ default: m.StickiesApp })));
+const TimeMachineComponent = lazy(() => import('../apps/TimeMachine').then((m) => ({ default: m.TimeMachineApp })));
 const LaunchpadComponent = lazy(() => Promise.resolve({ default: (() => null) as React.FC<any> }));
 
 export const APP_REGISTRY: Record<string, AppManifest> = {
@@ -346,5 +347,33 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
     minSize: { w: 440, h: 320 },
     singleInstance: true,
     menus: () => [],
+  },
+  timemachine: {
+    id: 'timemachine',
+    name: 'Time Machine',
+    icon: TimeMachineIcon,
+    component: TimeMachineComponent,
+    defaultSize: { w: 940, h: 620 },
+    minSize: { w: 720, h: 480 },
+    singleInstance: true,
+    menus: (win) => [
+      {
+        title: 'File',
+        items: [
+          { id: 'tm-back-up', label: 'Back Up Now', shortcut: '⌘B', action: () => useTimeMachineStore.getState().backUpNow('Manual backup', 'manual') },
+          { id: 'tm-div-1', label: '', divider: true },
+          { id: 'tm-close', label: 'Close Window', shortcut: '⌘W', action: () => win && useProcessStore.getState().closeWindow(win.id) },
+        ],
+      },
+      {
+        title: 'Edit',
+        items: [
+          { id: 'tm-prev', label: 'Previous Backup', shortcut: '←' },
+          { id: 'tm-next', label: 'Next Backup', shortcut: '→' },
+          { id: 'tm-div-1', label: '', divider: true },
+          { id: 'tm-restore', label: 'Restore…', shortcut: '⌘R' },
+        ],
+      },
+    ],
   },
 };

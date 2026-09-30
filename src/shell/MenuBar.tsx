@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; 
 import { 
   Wifi, Search, Sliders, Moon, RotateCcw, 
   Power, Lock, Settings as SettingsIcon, Info 
 } from 'lucide-react';
-import { AppleLogo } from '../assets/appIcons';
+import { AppleLogo, TimeMachineIcon } from '../assets/appIcons';
 import { AboutMacDialog } from './AboutMacDialog';
 import { BatteryGlyph } from './BatteryGlyph';
 import { BatteryPopover } from './BatteryPopover';
@@ -14,6 +14,12 @@ import { useProcessStore } from '../core/processStore';
 import { APP_REGISTRY } from '../core/appRegistry';
 import { sound } from '../core/sound';
 import { MenuItem } from '../types/os';
+import {
+  formatBytes,
+  msUntilNextBackup,
+  timeMachineStats,
+  useTimeMachineStore,
+} from '../core/timeMachineStore';
 
 export const MenuBar: React.FC = () => {
   const {

@@ -15,10 +15,18 @@ import { MissionControl } from './shell/MissionControl';
 import { Launchpad } from './shell/Launchpad';
 import { AppSwitcher } from './shell/AppSwitcher';
 import { Monitor, X } from 'lucide-react';
+import { startTimeMachineService, stopTimeMachineService } from './core/timeMachineStore';
 
 export default function App() {
   const { osState, brightness } = useThemeStore();
   const [showMobileNotice, setShowMobileNotice] = useState<boolean>(false);
+
+  // Time Machine runs as an OS-level service: it keeps capturing snapshots on
+  // schedule whether or not its window is open.
+  useEffect(() => {
+    startTimeMachineService();
+    return () => stopTimeMachineService();
+  }, []);
 
   useEffect(() => {
     const checkWidth = () => {
