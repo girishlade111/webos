@@ -579,8 +579,9 @@ export const Desktop: React.FC = () => {
       return; // Do nothing, let the clicked control handle its event!
     }
 
-    setDesktopContextMenu(null);
-    setIconContextMenu(null);
+    desktopMenu.close();
+    iconMenu.close();
+    setIconMenuTarget(null);
 
     if (!e.metaKey && !e.ctrlKey && !e.shiftKey) {
       setSelectedIds([]);
