@@ -35,6 +35,31 @@ export const MenuBar: React.FC = () => {
   const [isWifiPopoverOpen, setIsWifiPopoverOpen] = useState<boolean>(false);
   const [isBatteryPopoverOpen, setIsBatteryPopoverOpen] = useState<boolean>(false);
   const [isAboutMacOpen, setIsAboutMacOpen] = useState<boolean>(false);
+  const [isTimeMachineOpen, setIsTimeMachineOpen] = useState<boolean>(false);
+
+  // Time Machine status item: live countdown to the next scheduled backup.
+  const tmSnapshots = useTimeMachineStore((s) => s.snapshots);
+  const tmConfig = useTimeMachineStore((s) => s.config);
+  const tmPhase = useTimeMachineStore((s) => s.phase);
+  const backUpNow = useTimeMachineStore((s) => s.backUpNow);
+  const [tmNow, setTmNow] = useState<number>(Date.now());
+
+  useEffect(() => {
+    if (!isTimeMachineOpen) return;
+    const id = setInterval(() => setTmNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [isTimeMachineOpen]);
+
+  const tmStats = timeMachineStats(tmSnapshots);
+  const tmLastBackup = tmSnapshots.length ? tmSnapshots[tmSnapshots.length - 1].createdAt : null;
+  const tmNextIn = msUntilNextBackup(tmConfig, tmLastBackup, tmNow);
+  const tmBusy = tmPhase !== 'idle';
+  const tmCountdown =
+    tmNextIn === null
+      ? 'Off'
+      : tmNextIn < 60_000
+        ? `Next in ${Math.max(0, Math.round(tmNextIn / 1000))}s`
+        : `Next in ${Math.round(tmNextIn / 60_000)}m`;
 
   const menuBarRef = useRef<HTMLDivElement>(null);
 
@@ -65,6 +90,7 @@ export const MenuBar: React.FC = () => {
         setActiveMenuDropdown(null);
         setIsWifiPopoverOpen(false);
         setIsBatteryPopoverOpen(false);
+        setIsTimeMachineOpen(false);
       }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -72,6 +98,7 @@ export const MenuBar: React.FC = () => {
         setActiveMenuDropdown(null);
         setIsWifiPopoverOpen(false);
         setIsBatteryPopoverOpen(false);
+        setIsTimeMachineOpen(false);
       }
     };
     window.addEventListener('mousedown', handleGlobalClick);
