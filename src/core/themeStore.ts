@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AccentColor, OSState, ThemeSettings } from '../types/os';
+import { AccentColor, AudioOutputDevice, OSState, ThemeSettings } from '../types/os';
 import { sound } from './sound';
 
 export const ACCENT_MAP: Record<AccentColor, { hex: string; hover: string; rgb: string; name: string }> = {
