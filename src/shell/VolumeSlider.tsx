@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Volume1, Volume2, Volume3, VolumeX } from 'lucide-react';
+import { Volume1, Volume2, Volume, VolumeX } from 'lucide-react';
 
 /* ------------------------------------------------------------------ *
  * Volume level glyph
