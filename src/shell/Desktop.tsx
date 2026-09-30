@@ -698,8 +698,8 @@ export const Desktop: React.FC = () => {
 
   /** Refresh: re-read the virtual filesystem and re-tile the desktop. */
   const handleRefreshDesktop = useCallback(async () => {
-    sound.playClick();
     if (isRefreshing) return;
+    sound.playClick();
     setIsRefreshing(true);
     await initializeFS();
     window.setTimeout(() => {
