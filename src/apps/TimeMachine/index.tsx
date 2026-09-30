@@ -673,7 +673,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
                         <div
                           key={snap.id}
                           onClick={() => {
-                            setSelectedIndex(i);
+                            selectIndex(i);
                             setPane('browse');
                           }}
                           className={`flex items-center gap-3 px-3 py-2 transition-colors ${
