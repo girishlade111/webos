@@ -19,7 +19,6 @@ import {
   Clock,
 } from 'lucide-react';
 import {
-  DEFAULT_CONFIG,
   INTERVAL_PRESETS,
   computeDiff,
   formatBytes,
