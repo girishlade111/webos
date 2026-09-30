@@ -82,6 +82,7 @@ export default function App() {
           {/* System Overlays */}
           <Spotlight />
           <ControlCenter />
+          <VolumeHUD />
           <NotificationCenter />
           <MissionControl />
           <Launchpad />

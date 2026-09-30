@@ -3,7 +3,6 @@ import { Headphones, Laptop, MonitorSmartphone, Radio } from 'lucide-react';
 import { useThemeStore, getAudioOutputDevice } from '../core/themeStore';
 import { AudioOutputKind } from '../types/os';
 import { VolumeGlyph } from './VolumeSlider';
-
 export const OUTPUT_DEVICE_ICONS: Record<AudioOutputKind, React.FC<{ size?: number; className?: string }>> = {
   speakers: Laptop,
   headphones: Headphones,
