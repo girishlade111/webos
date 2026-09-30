@@ -137,11 +137,11 @@ export const Tunnel: React.FC<TunnelProps> = ({
         className="pointer-events-none absolute top-1/2 h-px -translate-y-1/2"
         style={{
           left: '50%',
-          width: `${reach + 420}px`,
-          marginLeft: `${-reach / 2}px`,
+          width: `${reach + 300}px`,
+          marginLeft: `${-reach / 2 + 40}px`,
           background:
-            'linear-gradient(90deg, rgba(140,190,255,0) 0%, rgba(140,190,255,0.32) 46%, rgba(198,220,255,0.72) 68%, rgba(140,190,255,0.22) 100%)',
-          filter: 'blur(0.6px)',
+            'linear-gradient(90deg, rgba(150,195,255,0) 0%, rgba(150,195,255,0.16) 40%, rgba(205,225,255,0.42) 62%, rgba(150,195,255,0.1) 100%)',
+          filter: 'blur(1.4px)',
         }}
         aria-hidden="true"
       />

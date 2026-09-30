@@ -571,15 +571,20 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
             </button>
           </div>
         ) : (
-          <Tunnel
-            snapshots={snapshots}
-            selectedIndex={Math.max(0, selectedIndex)}
-            onSelect={(i) => {
-              setPane('browse');
-              selectIndex(i);
-            }}
-            reducedMotion={reducedMotion}
-          />
+          <div
+            className="absolute inset-x-0 top-[52px] bottom-[80px] transition-[padding] duration-300 ease-out"
+            style={{ paddingRight: showChanges && selected ? 276 : 0 }}
+          >
+            <Tunnel
+              snapshots={snapshots}
+              selectedIndex={Math.max(0, selectedIndex)}
+              onSelect={(i) => {
+                setPane('browse');
+                selectIndex(i);
+              }}
+              reducedMotion={reducedMotion}
+            />
+          </div>
         )}
       </div>
 
