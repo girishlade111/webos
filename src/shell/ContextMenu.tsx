@@ -310,13 +310,18 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     }
   };
 
-  /** Hovering a row at `level` focuses it; submenus expand in place. */
+  /**
+   * Hovering a row at `level` focuses it; submenus expand in place.
+   * Keeps `actives` exactly parallel to `openPath` so arrow keys always act on
+   * the deepest open level.
+   */
   const handleRowEnter = (level: number, index: number, hasChildren: boolean) => {
     clearCloseTimer();
     setActives((a) => {
       const next = a.slice(0, level + 1);
       next[level] = index;
-      return next;
+      if (hasChildren && next.length < level + 2) next.push(0);
+      return next.slice(0, hasChildren ? level + 2 : level);
     });
     setOpenPath((p) => (hasChildren ? [...p.slice(0, level), index] : p.slice(0, level)));
   };
