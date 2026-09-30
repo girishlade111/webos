@@ -95,7 +95,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     clearCloseTimer();
     closeTimerRef.current = window.setTimeout(() => {
       setOpenPath([]);
-      setActives([]);
+      setActives([-1]);
     }, SUBMENU_CLOSE_DELAY);
   }, [clearCloseTimer]);
 
@@ -317,8 +317,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
   /**
    * Hovering a row at `level` focuses it; submenus expand in place.
-   * Keeps `actives` exactly parallel to `openPath` so arrow keys always act on
-   * the deepest open level.
+   *
+   * Invariant: `actives.length === openPath.length + 1`, so `actives[level]`
+   * always holds the highlight for the level currently being traversed.
    */
   const handleRowEnter = (level: number, index: number, hasChildren: boolean) => {
     clearCloseTimer();
@@ -328,7 +329,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       // Hovering the parent highlights only the parent — AppKit leaves the
       // flyout unhighlighted until the pointer (or arrow key) enters it.
       if (hasChildren && next.length < level + 2) next.push(-1);
-      return next.slice(0, hasChildren ? level + 2 : level);
+      return next;
     });
     setOpenPath((p) => (hasChildren ? [...p.slice(0, level), index] : p.slice(0, level)));
   };
