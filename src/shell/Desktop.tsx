@@ -1088,20 +1088,48 @@ export const Desktop: React.FC = () => {
               )}
             </div>
 
-            {/* Icon Label & Item Info */}
+            {/* Icon Label & Item Info — or the inline rename field */}
             <div className={`flex flex-col ${isHorizontal ? 'items-start text-left truncate flex-1' : 'items-center text-center mt-1'} pointer-events-none w-full px-1`}>
-              <span
-                style={{ fontSize: `${Math.max(10, Math.min(12, Math.round(viewOptions.iconSize * 0.2)))}px` }}
-                className={`font-medium leading-snug px-1.5 py-0.5 rounded break-words transition-colors ${
-                  isHorizontal ? 'truncate w-full' : 'max-w-full line-clamp-2'
-                } ${
-                  isSelected
-                    ? 'bg-[var(--accent)] text-white shadow-xs'
-                    : 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)] group-hover:bg-black/30'
-                }`}
-              >
-                {item.name}
-              </span>
+              {isRenaming ? (
+                <input
+                  ref={renameInputRef}
+                  value={renameDraft}
+                  onChange={(e) => setRenameDraft(e.target.value)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      commitRename();
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      cancelRename();
+                    }
+                  }}
+                  onBlur={commitRename}
+                  spellCheck={false}
+                  autoFocus
+                  aria-label="Rename item"
+                  className="pointer-events-auto w-full max-w-full rounded-[5px] border border-[var(--accent)] bg-white px-1.5 py-0.5 text-center font-medium text-neutral-900 outline-none ring-2 ring-[var(--accent)]/40"
+                  style={{
+                    fontSize: `${Math.max(11, Math.min(13, Math.round(viewOptions.iconSize * 0.22)))}px`,
+                  }}
+                />
+              ) : (
+                <span
+                  style={{ fontSize: `${Math.max(10, Math.min(12, Math.round(viewOptions.iconSize * 0.2)))}px` }}
+                  className={`font-medium leading-snug px-1.5 py-0.5 rounded break-words transition-colors ${
+                    isHorizontal ? 'truncate w-full' : 'max-w-full line-clamp-2'
+                  } ${
+                    isSelected
+                      ? 'bg-[var(--accent)] text-white shadow-xs'
+                      : 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)] group-hover:bg-black/30'
+                  }`}
+                >
+                  {item.name}
+                </span>
+              )}
 
               {viewOptions.showItemInfo && itemInfo && (
                 <span className="text-[9px] text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] leading-none mt-0.5 px-1 truncate max-w-full">
