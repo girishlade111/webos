@@ -458,64 +458,6 @@ export const Desktop: React.FC = () => {
     input.setSelectionRange(0, dot > 0 ? dot : input.value.length);
   }, [renamingId]);
 
-  // Keyboard shortcuts — Space Quick Look, ⌘I Info, ⌘J View Options,
-  // ⇧⌘N New Folder, ⇧⌘O Clean Up, ⌘R Refresh.
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-
-      const mod = e.metaKey || e.ctrlKey;
-
-      if (e.code === 'Space' && selectedIds.length > 0) {
-        e.preventDefault();
-        const selectedItem = desktopItems.find((item) => item.id === selectedIds[0]);
-        if (selectedItem) {
-          sound.playClick();
-          setQuickLookItem((prev) => (prev ? null : selectedItem));
-        }
-        return;
-      }
-
-      if (mod && e.key.toLowerCase() === 'i' && selectedIds.length > 0) {
-        e.preventDefault();
-        const selectedItem = desktopItems.find((item) => item.id === selectedIds[0]);
-        if (selectedItem) {
-          sound.playClick();
-          setGetInfoItem(selectedItem);
-        }
-        return;
-      }
-
-      if (mod && e.key.toLowerCase() === 'j') {
-        e.preventDefault();
-        sound.playClick();
-        setIsViewOptionsOpen((prev) => !prev);
-        return;
-      }
-
-      if (mod && e.shiftKey && e.key.toLowerCase() === 'n') {
-        e.preventDefault();
-        handleCreateFolder();
-        return;
-      }
-
-      if (mod && e.shiftKey && e.key.toLowerCase() === 'o') {
-        e.preventDefault();
-        handleCleanUp();
-        return;
-      }
-
-      if (mod && e.key.toLowerCase() === 'r') {
-        e.preventDefault();
-        void handleRefreshDesktop();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIds, desktopItems, handleCreateFolder, handleCleanUp, handleRefreshDesktop]);
-
   // Pointer Down on an Icon (initiates selection or drag)
   const handleIconPointerDown = (e: React.PointerEvent, item: DesktopIconItem) => {
     if (e.button !== 0) return;
