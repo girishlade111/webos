@@ -112,7 +112,7 @@ const AudioOutputModule: React.FC = () => {
         <div
           role="listbox"
           aria-label="Output devices"
-          className="mac-popover absolute right-3 top-[calc(100%-2px)] z-30 w-[248px]"
+          className="mac-popover absolute right-3 top-full z-30 mt-1.5 w-[248px]"
         >
           {AUDIO_OUTPUT_DEVICES.map((candidate) => {
             const CandidateIcon = OUTPUT_DEVICE_ICONS[candidate.kind];
