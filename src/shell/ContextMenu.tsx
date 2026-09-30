@@ -325,7 +325,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     setActives((a) => {
       const next = a.slice(0, level + 1);
       next[level] = index;
-      if (hasChildren && next.length < level + 2) next.push(0);
+      // Hovering the parent highlights only the parent — AppKit leaves the
+      // flyout unhighlighted until the pointer (or arrow key) enters it.
+      if (hasChildren && next.length < level + 2) next.push(-1);
       return next.slice(0, hasChildren ? level + 2 : level);
     });
     setOpenPath((p) => (hasChildren ? [...p.slice(0, level), index] : p.slice(0, level)));
