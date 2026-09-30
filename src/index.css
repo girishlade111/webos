@@ -253,6 +253,64 @@
   }
 }
 
+/* ============================================================================
+   macOS Control Center Slider — the 4pt capsule + white knob used for both
+   Display and Sound. Monochrome by design: Control Center reserves the accent
+   colour for the round toggle tiles, never the sliders.
+   ========================================================================== */
+.mac-slider-track {
+  --slider-track: rgba(0, 0, 0, 0.1);
+  --slider-fill: rgba(0, 0, 0, 0.6);
+  background-color: var(--slider-track);
+  transition: opacity 160ms ease;
+}
+.dark .mac-slider-track {
+  --slider-track: rgba(255, 255, 255, 0.16);
+  --slider-fill: rgba(255, 255, 255, 0.82);
+}
+.mac-slider-fill {
+  background-color: var(--slider-fill);
+}
+.mac-slider-knob {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.28),
+    0 0 0 0.5px rgba(0, 0, 0, 0.1),
+    0 0 0 3px transparent;
+  transition:
+    transform 180ms cubic-bezier(0.32, 0.72, 0, 1),
+    left 180ms cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 160ms ease;
+}
+/* Keyboard focus draws a soft halo around the knob, as AppKit does. */
+.mac-slider-knob[data-focused='true'] {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.28),
+    0 0 0 0.5px rgba(0, 0, 0, 0.1),
+    0 0 0 4px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+/* Muted / disabled sliders fade back, matching macOS's greyed-out control. */
+[aria-disabled='true'] .mac-slider-track {
+  --slider-track: rgba(128, 128, 128, 0.16);
+  --slider-fill: rgba(128, 128, 128, 0.3);
+  opacity: 0.6;
+}
+[aria-disabled='true'] .mac-slider-knob {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.18),
+    0 0 0 0.5px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes volumePulse {
+  0% { transform: scale(1); }
+  38% { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+
+.animate-volume-pulse {
+  animation: volumePulse 260ms cubic-bezier(0.34, 1.4, 0.64, 1);
+  transform-origin: center;
+}
+
 /* Custom scrollbars matching macOS */
 ::-webkit-scrollbar {
   width: 7px;
