@@ -452,6 +452,40 @@
   animation: jiggleAlt 0.29s infinite ease-in-out alternate;
 }
 
+/* ============================================================================
+   Time Machine — the star field behind the browse view. Two layers of motion:
+   a very slow horizontal parallax drift for the whole sky, and an independent
+   opacity twinkle per star.
+   ========================================================================== */
+@keyframes tmSkyDrift {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-14%, 0, 0); }
+}
+
+@keyframes tmTwinkle {
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 1; }
+}
+
+.tm-drift {
+  animation: tmSkyDrift 150s linear infinite alternate;
+  will-change: transform;
+}
+
+.tm-twinkle {
+  animation-name: tmTwinkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  will-change: opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-drift,
+  .tm-twinkle {
+    animation: none;
+  }
+}
+
 .desktop-icon-lift {
   filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.5));
 }
