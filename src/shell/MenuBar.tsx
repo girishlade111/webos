@@ -7,6 +7,7 @@ import { AppleLogo } from '../assets/appIcons';
 import { AboutMacDialog } from './AboutMacDialog';
 import { BatteryGlyph } from './BatteryGlyph';
 import { BatteryPopover } from './BatteryPopover';
+import { VolumeGlyph } from './VolumeSlider';
 import { useThemeStore } from '../core/themeStore';
 import { useBatteryStore } from '../core/batteryStore';
 import { useProcessStore } from '../core/processStore';
