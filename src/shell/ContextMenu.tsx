@@ -410,6 +410,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     <div
       ref={rootRef}
       role="menu"
+      tabIndex={-1}
       className="macos-menu"
       style={{
         left: `${placement.left}px`,
