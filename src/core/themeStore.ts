@@ -18,6 +18,8 @@ interface ThemeStoreState extends ThemeSettings {
   wifiEnabled: boolean;
   bluetoothEnabled: boolean;
   doNotDisturb: boolean;
+  /** Monotonic token bumped whenever the volume HUD should reappear. */
+  volumeHudNonce: number;
   activeMenuDropdown: string | null;
   isSpotlightOpen: boolean;
   isControlCenterOpen: boolean;
