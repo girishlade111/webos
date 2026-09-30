@@ -769,7 +769,7 @@ export const Desktop: React.FC = () => {
   const handleCreateTextFile = useCallback(() => {
     sound.playClick();
     const id = createFile('Untitled.txt', DESKTOP_ID, 'Welcome to your new document.\n');
-    if (id) beginRename(id);
+    if (id) beginRename(id, 'Untitled.txt');
   }, [createFile, beginRename]);
 
   // Keyboard shortcuts — Space Quick Look, ⌘I Info, ⌘J View Options,
