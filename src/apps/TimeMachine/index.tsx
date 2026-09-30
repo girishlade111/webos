@@ -248,10 +248,10 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
   const [now, setNow] = useState(Date.now());
   const [reducedMotion, setReducedMotion] = useState(false);
 
-  const restoreRef = useRef<HTMLDivElement>(null);
+  const browseRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    restoreRef.current?.focus();
+    if (pane === 'browse') browseRef.current?.focus();
   }, [pane]);
 
   /* ------------------------------ reactions ------------------------------ */
@@ -312,9 +312,12 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
     [backUpNow]
   );
 
-  restoreRef.current = (snap) => {
-    void restoreVolume(snap.id);
-  };
+  const handleRestore = useCallback(
+    (snap: TimeMachineSnapshot) => {
+      void restoreVolume(snap.id);
+    },
+    [restoreVolume]
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -928,7 +931,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
             onCancel={() => setRestoreTarget(null)}
             onConfirm={() => {
               setRestoreTarget(null);
-              restoreRef.current?.(restoreTarget);
+              handleRestore(restoreTarget);
             }}
           />
         )}
@@ -961,7 +964,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
             onCancel={() => setConfirmPrune(false)}
             onConfirm={() => {
               setConfirmPrune(false);
-              void deleteSnapshot(snapshots[snapshots.length - 1]?.id ?? '');
+              void pruneStorage();
             }}
           />
         )}

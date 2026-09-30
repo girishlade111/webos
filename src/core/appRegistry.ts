@@ -5,9 +5,10 @@ import {
   CalculatorIcon, CalendarIcon, PhotosIcon, MusicIcon, WeatherIcon, 
   SettingsIcon, ActivityMonitorIcon, AppStoreIcon,
   ClockIcon, RemindersIcon, PhotoBoothIcon, DiskUtilityIcon, StickiesIcon,
-  LaunchpadIcon
+  LaunchpadIcon, TimeMachineIcon
 } from '../assets/appIcons';
 import { useProcessStore } from './processStore';
+import { useTimeMachineStore } from './timeMachineStore';
 
 // Lazy loaded app components for optimal performance
 const FinderComponent = lazy(() => import('../apps/Finder').then((m) => ({ default: m.FinderApp })));
