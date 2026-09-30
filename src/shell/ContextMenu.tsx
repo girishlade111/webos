@@ -149,7 +149,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     root.querySelectorAll<HTMLElement>('[data-menu-sub]').forEach((panel) => {
       panel.style.left = '';
       panel.style.right = '';
-      panel.style.transform = '';
+      panel.style.top = '';
 
       const rect = panel.getBoundingClientRect();
       const hostRect = (panel.parentElement as HTMLElement)?.getBoundingClientRect();
@@ -159,13 +159,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         panel.style.right = 'calc(100% + 5px)';
       }
 
+      /* Nudge vertically with `top` — a transform would be clobbered by the
+         entrance keyframes, which hold `transform: scale(1)` via fill-mode. */
       const after = panel.getBoundingClientRect();
       if (hostRect && after.bottom > vh - EDGE) {
-        const shift = Math.min(
-          after.bottom - (vh - EDGE),
-          Math.max(0, after.top - hostRect.top),
-        );
-        panel.style.transform = `translateY(-${Math.round(shift)}px)`;
+        const shift = Math.min(after.bottom - (vh - EDGE), Math.max(0, after.top - hostRect.top));
+        panel.style.top = `${-Math.round(shift)}px`;
       }
     });
   }, [openPath, placement.left, placement.top]);
