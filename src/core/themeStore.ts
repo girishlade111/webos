@@ -321,27 +321,33 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
   /**
    * Master output level. Mirrors macOS semantics:
    * dragging to 0 mutes, raising above 0 unmutes, and the level is remembered
-   * separately for every output device.
+   * separately for every output device. Silence is not stored as a level, so
+   * unmuting restores whatever the user last heard.
    */
   setMasterVolume: (volume) => {
     const clamped = Math.round(Math.max(0, Math.min(100, volume)));
 
     set((state) => {
-      const soundEnabled = clamped === 0 ? false : state.soundEnabled || clamped > 0;
+      const soundEnabled = clamped > 0 ? true : false;
 
       if (soundEnabled !== state.soundEnabled) {
         sound.setMuted(!soundEnabled);
       }
       sound.setVolume(clamped);
 
+      const volumeByDevice =
+        clamped > 0
+          ? { ...state.volumeByDevice, [state.outputDeviceId]: clamped }
+          : state.volumeByDevice;
+
       const updated: ThemeSettings = {
         ...state,
         volume: clamped,
         soundEnabled,
-        volumeByDevice: { ...state.volumeByDevice, [state.outputDeviceId]: clamped },
+        volumeByDevice,
       };
       saveState(updated);
-      return { volume: clamped, soundEnabled, volumeByDevice: updated.volumeByDevice };
+      return { volume: clamped, soundEnabled, volumeByDevice };
     });
   },
 
