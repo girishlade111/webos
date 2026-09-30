@@ -313,6 +313,89 @@ export const MenuBar: React.FC = () => {
 
       {/* Right Status Controls */}
       <div className="flex items-center gap-1">
+        {/* Time Machine Status -> opens popover with backup summary */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              sound.playClick();
+              setIsTimeMachineOpen(!isTimeMachineOpen);
+              setIsWifiPopoverOpen(false);
+              setIsBatteryPopoverOpen(false);
+              setActiveMenuDropdown(null);
+            }}
+            aria-haspopup="dialog"
+            aria-expanded={isTimeMachineOpen}
+            aria-label={`Time Machine, ${tmCountdown}`}
+            title="Time Machine"
+            className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${
+              isTimeMachineOpen ? 'bg-black/15 dark:bg-white/15' : 'hover:bg-black/10 dark:hover:bg-white/10'
+            }`}
+          >
+            <TimeMachineIcon
+              size={14}
+              className={tmConfig.enabled ? 'opacity-95' : 'opacity-40 grayscale'}
+            />
+          </button>
+
+          {isTimeMachineOpen && (
+            <div className="absolute top-7 right-0 z-50 w-72 animate-fade-in overflow-hidden rounded-xl border border-[var(--menu-dropdown-border)] bg-[var(--menu-dropdown-bg)] p-3 shadow-2xl glass-panel text-xs space-y-2.5">
+              <div className="flex items-center gap-2.5">
+                <TimeMachineIcon size={30} className="shrink-0 rounded-[8px]" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold tracking-tight">Time Machine</p>
+                  <p className="truncate text-[11px] opacity-55">
+                    {tmBusy
+                      ? tmPhase === 'restoring'
+                        ? 'Restoring…'
+                        : 'Backing up…'
+                      : tmConfig.enabled
+                        ? tmCountdown
+                        : 'Automatic backup is off'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-1.5 text-center">
+                {[
+                  { k: 'Backups', v: String(tmStats.snapshotCount) },
+                  { k: 'Files', v: String(tmStats.fileCount) },
+                  { k: 'Size', v: formatBytes(tmStats.uniquePayloadBytes) },
+                ].map((m) => (
+                  <div key={m.k} className="rounded-lg border border-black/8 bg-black/4 px-1 py-1.5 dark:border-white/8 dark:bg-white/6">
+                    <p className="truncate text-[12px] font-semibold tabular-nums tracking-tight">{m.v}</p>
+                    <p className="text-[9.5px] uppercase tracking-wide opacity-45">{m.k}</p>
+                  </div>
+                ))}
+              </div>
+
+              {tmLastBackup && (
+                <p className="text-[11px] leading-[1.45] opacity-60">
+                  Last backup {new Date(tmLastBackup).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
+              )}
+
+              <div className="flex gap-1.5 pt-0.5">
+                <button
+                  onClick={() => {
+                    setIsTimeMachineOpen(false);
+                    openWindow('timemachine');
+                  }}
+                  className="flex-1 rounded-md bg-[var(--accent)] px-2 py-1 text-[11.5px] font-medium tracking-tight text-white transition-[filter] hover:brightness-110"
+                >
+                  Open Time Machine
+                </button>
+                <button
+                  onClick={() => void backUpNow('Manual backup', 'manual')}
+                  disabled={tmBusy}
+                  className="flex-1 rounded-md border border-black/12 bg-white/60 px-2 py-1 text-[11.5px] font-medium tracking-tight transition-colors hover:bg-white/90 disabled:opacity-40 dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20"
+                >
+                  {tmBusy ? 'Working…' : 'Back Up Now'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Battery Indicator -> Click opens Battery popover */}
         {hasBattery && (
           <div className="relative">
