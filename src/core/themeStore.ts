@@ -77,10 +77,51 @@ const DEFAULT_SETTINGS: ThemeSettings = {
   soundEnabled: false, // Muted by default per specification
   brightness: 100,
   volume: 80,
+  outputDeviceId: 'macbook-speakers',
+  volumeByDevice: {},
   username: DEFAULT_USER_NAME,
   userAvatar: DEFAULT_USER_AVATAR,
   minimizeEffect: 'genie',
 };
+
+/**
+ * Audio output destinations shown in Control Center. macOS lists built-in
+ * speakers first, then connected accessories, then AirPlay targets.
+ */
+export const AUDIO_OUTPUT_DEVICES: AudioOutputDevice[] = [
+  {
+    id: 'macbook-speakers',
+    name: 'MacBook Pro Speakers',
+    kind: 'speakers',
+    defaultVolume: 80,
+    connected: true,
+  },
+  {
+    id: 'airpods-pro',
+    name: 'AirPods Pro',
+    kind: 'headphones',
+    defaultVolume: 55,
+    connected: true,
+  },
+  {
+    id: 'studio-display',
+    name: 'Studio Display',
+    kind: 'display',
+    defaultVolume: 65,
+    connected: true,
+  },
+  {
+    id: 'kitchen-homepod',
+    name: 'HomePod — Kitchen',
+    kind: 'airplay',
+    defaultVolume: 45,
+    connected: false,
+  },
+];
+
+export const getAudioOutputDevice = (id: string): AudioOutputDevice =>
+  AUDIO_OUTPUT_DEVICES.find((d) => d.id === id) ?? AUDIO_OUTPUT_DEVICES[0];
+
 
 const loadInitialState = (): ThemeSettings => {
   if (typeof window === 'undefined') return DEFAULT_SETTINGS;
