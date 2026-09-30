@@ -687,7 +687,7 @@ export const Desktop: React.FC = () => {
   const handleCreateFolder = useCallback(() => {
     sound.playClick();
     const id = createFolder('untitled folder', DESKTOP_ID);
-    if (id) beginRename(id);
+    if (id) beginRename(id, 'untitled folder');
   }, [createFolder, beginRename]);
 
   /** Arrange → Clean Up: snap every icon into macOS right-to-left columns. */
