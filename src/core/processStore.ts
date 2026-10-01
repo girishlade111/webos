@@ -249,13 +249,58 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
       sound.playWindowFocus();
     }
     nextZIndex += 1;
+    /* On a compact viewport every window is full-bleed, so showing two at once
+       would render one on top of the other. The focused one wins — this is the
+       iPadOS "one app at a time" rule rather than a z-index fix. */
+    const compact =
+      typeof window !== 'undefined' && window.innerWidth < COMPACT_MAX_WIDTH;
+
     set((state) => ({
-      windows: state.windows.map((w) =>
-        w.id === windowId
-          ? { ...w, isFocused: true, isMinimized: false, zIndex: nextZIndex }
-          : { ...w, isFocused: false }
-      ),
+      windows: state.windows.map((w) => {
+        if (w.id === windowId) {
+          return { ...w, isFocused: true, isMinimized: false, zIndex: nextZIndex };
+        }
+        return compact
+          ? { ...w, isFocused: false, isMinimized: true }
+          : { ...w, isFocused: false };
+      }),
       focusedWindowId: windowId,
+    }));
+  },
+
+  /**
+   * Re-fit every window to the current viewport.
+   *
+   * Called on resize and orientation change. Without this, rotating a phone or
+   * resizing a desktop window leaves windows stranded off-screen or wider than
+   * the display — the classic "window manager that only works at one size"
+   * failure.
+   */
+  reflowToViewport: () => {
+    if (typeof window === 'undefined') return;
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+    const compact = screenW < COMPACT_MAX_WIDTH;
+
+    set((state) => ({
+      windows: state.windows.map((w) => {
+        if (compact) {
+          return { ...w, x: 0, y: MENUBAR_HEIGHT, width: screenW, height: screenH - MENUBAR_HEIGHT, isMaximized: true };
+        }
+        if (w.isMaximized) {
+          return { ...w, x: 0, y: MENUBAR_HEIGHT, width: screenW, height: screenH - MENUBAR_HEIGHT };
+        }
+        // Shrink anything that no longer fits; keep it on-screen otherwise.
+        const width = Math.min(w.width, screenW - 16);
+        const height = Math.min(w.height, screenH - MENUBAR_HEIGHT - 16);
+        return {
+          ...w,
+          width,
+          height,
+          x: Math.max(0, Math.min(w.x, screenW - width)),
+          y: Math.max(MENUBAR_HEIGHT, Math.min(w.y, screenH - height)),
+        };
+      }),
     }));
   },
 
@@ -320,9 +365,9 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
                   isMaximized: true,
                   prevBounds,
                   x: 0,
-                  y: 28,
+                  y: MENUBAR_HEIGHT,
                   width: screenW,
-                  height: screenH - 28,
+                  height: screenH - MENUBAR_HEIGHT,
                 }
               : w
           ),
