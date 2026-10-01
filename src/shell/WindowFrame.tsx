@@ -563,8 +563,10 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
         </Suspense>
       </div>
 
-      {/* 8-Directional Resize Grips (Active when not maximized) */}
-      {!win.isMaximized && (
+      {/* 8-Directional Resize Grips (Active when not maximized)
+          Hidden on compact viewports: windows there are full-bleed, and a
+          one-pixel drag target is unusable with a finger anyway. */}
+      {!win.isMaximized && !isCompact && (
         <>
           <div onMouseDown={(e) => handleResizeStart(e, 'n')} className="absolute top-0 left-2 right-2 h-1 cursor-n-resize" />
           <div onMouseDown={(e) => handleResizeStart(e, 's')} className="absolute bottom-0 left-2 right-2 h-1.5 cursor-s-resize" />
