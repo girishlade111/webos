@@ -584,6 +584,23 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
           </div>
         )}
 
+        {/* Keyboard Shortcuts */}
+        {activePane === 'keyboard' && (
+          <div className="flex h-full flex-col">
+            <div className="mb-3 shrink-0">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                Keyboard Shortcuts
+              </h2>
+              <p className="text-xs text-neutral-400">
+                Click any shortcut to record a new key combination.
+              </p>
+            </div>
+            <div className="min-h-0 flex-1">
+              <KeyboardShortcutsPane />
+            </div>
+          </div>
+        )}
+
         {/* Sound Pane */}
         {activePane === 'sound' && (
           <div className="max-w-xl space-y-6">
