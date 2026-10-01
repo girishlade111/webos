@@ -26,32 +26,8 @@ export const VolumeHUD: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<number | null>(null);
 
-  /* System volume keys — F11/F12 like macOS, plus ⌘↑ / ⌘↓.
-     Owning this listener here keeps the HUD and the volume state in sync. */
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) {
-        return;
-      }
-
-      const { adjustVolume, showVolumeHud } = useThemeStore.getState();
-      const mod = e.metaKey || e.ctrlKey;
-
-      if (e.key === 'F12' || (mod && e.key === 'ArrowUp')) {
-        e.preventDefault();
-        adjustVolume(6);
-        showVolumeHud();
-      } else if (e.key === 'F11' || (mod && e.key === 'ArrowDown')) {
-        e.preventDefault();
-        adjustVolume(-6);
-        showVolumeHud();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  /* Volume bindings (⌘↑ / ⌘↓ / F11 / F12) live in <ShortcutManager>, which calls
+     adjustVolume + showVolumeHud. This component only renders the resulting HUD. */
 
   useEffect(() => {
     if (nonce === 0) return;
