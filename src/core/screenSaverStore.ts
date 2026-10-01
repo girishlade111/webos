@@ -128,15 +128,19 @@ export const useScreenSaverStore = create<ScreenSaverState>((set, get) => ({
   },
 
   dismiss: () => {
-    const { phase } = get();
+    const { phase, sessionNonce } = get();
     if (phase !== 'active' && phase !== 'dimming') return;
     set({ phase: 'waking' });
-    window.setTimeout(() => get().hide(), WAKE_DURATION);
+
+    // The teardown is token-guarded: if the saver is re-engaged before the fade
+    // finishes, the stale timer bails out instead of killing the new session.
+    window.setTimeout(() => {
+      const now = get();
+      if (now.phase === 'waking' && now.sessionNonce === sessionNonce) now.hide();
+    }, WAKE_DURATION);
   },
 
   hide: () => {
-    // A re-engage during the wake fade supersedes this teardown.
-    if (get().phase !== 'waking') return;
     set({ phase: 'inactive', isVisible: false, isPreview: false });
     screenSaverIdle.reset();
   },
@@ -226,21 +230,26 @@ class ScreenSaverIdleService {
     if (document.visibilityState === 'visible') this.lastActivity = Date.now();
   };
 
+  /**
+   * Discrete inputs. `pointermove` is deliberately excluded — it gets its own
+   * listener so a resting mouse can jitter without counting as activity.
+   */
+  private static readonly DISCRETE_EVENTS: (keyof WindowEventMap)[] = [
+    'pointerdown',
+    'keydown',
+    'keyup',
+    'wheel',
+    'touchstart',
+    'touchmove',
+    'focus',
+  ];
+
   start() {
     if (this.intervalId !== null) return;
 
-    const events: (keyof WindowEventMap)[] = [
-      'pointermove',
-      'pointerdown',
-      'keydown',
-      'keyup',
-      'wheel',
-      'touchstart',
-      'touchmove',
-      'focus',
-    ];
-
-    events.forEach((evt) => window.addEventListener(evt, this.onActivity, { passive: true }));
+    ScreenSaverIdleService.DISCRETE_EVENTS.forEach((evt) =>
+      window.addEventListener(evt, this.onActivity, { passive: true })
+    );
     window.addEventListener('pointermove', this.onPointerMove, { passive: true });
     document.addEventListener('visibilitychange', this.onVisibilityChange);
 
@@ -272,18 +281,9 @@ class ScreenSaverIdleService {
       this.intervalId = null;
     }
 
-    const events: (keyof WindowEventMap)[] = [
-      'pointermove',
-      'pointerdown',
-      'keydown',
-      'keyup',
-      'wheel',
-      'touchstart',
-      'touchmove',
-      'focus',
-    ];
-
-    events.forEach((evt) => window.removeEventListener(evt, this.onActivity));
+    ScreenSaverIdleService.DISCRETE_EVENTS.forEach((evt) =>
+      window.removeEventListener(evt, this.onActivity)
+    );
     window.removeEventListener('pointermove', this.onPointerMove);
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
   }

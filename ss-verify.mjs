@@ -31,9 +31,9 @@ await page.waitForTimeout(5200);
 console.log('after 5.2s idle -> ss mounted =', await page.evaluate(() => !!document.querySelector('.ss-root')));
 await page.screenshot({ path: `${OUT}/ss-idle-auto.png` });
 
-// Sub-pixel jitter must NOT dismiss it
+// Sub-pixel jitter must NOT dismiss it (wait past the 650ms wake fade)
 for (let i = 0; i < 6; i++) await page.mouse.move(640 + (i % 2), 400);
-await page.waitForTimeout(400);
+await page.waitForTimeout(1100);
 console.log('after 1px jitter -> ss mounted =', await page.evaluate(() => !!document.querySelector('.ss-root')));
 
 // Real movement dismisses
@@ -64,6 +64,32 @@ await page.mouse.move(500, 300);
 await page.mouse.move(700, 500, { steps: 5 });
 await page.waitForTimeout(1400);
 console.log('lockOnWake: after wake, ss mounted =', await page.evaluate(() => !!document.querySelector('.ss-root')));
+
+// Leaving the desktop mid-saver must not strand the overlay
+await page.evaluate(() => {
+  localStorage.setItem('webos_screen_saver_v1', JSON.stringify({
+    enabled: true, idleDelayMs: 2000, variant: 'logo', showClock: true, lockOnWake: false,
+  }));
+});
+await page.reload({ waitUntil: 'networkidle' });
+await page.waitForTimeout(4000);
+for (let i = 0; i < 8; i++) {
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(600);
+  if (await page.evaluate(() => !!document.querySelector('.desktop-icon'))) break;
+}
+await page.waitForTimeout(4000);
+console.log('saver up =', await page.evaluate(() => !!document.querySelector('.ss-root')));
+// Apple menu -> Sleep
+await page.evaluate(() => {
+  const apple = Array.from(document.querySelectorAll('svg')).find((s) => s.getAttribute('viewBox') === '0 0 170 170');
+  (apple.closest('button') || apple.parentElement)?.click();
+});
+await page.waitForTimeout(500);
+const sleep = page.getByText('Sleep', { exact: true });
+if (await sleep.count()) await sleep.first().click({ force: true });
+await page.waitForTimeout(800);
+console.log('after Sleep -> saver overlay gone =', await page.evaluate(() => !document.querySelector('.ss-root')));
 
 await browser.close();
 console.log('done');
