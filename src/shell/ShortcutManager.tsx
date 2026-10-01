@@ -390,14 +390,6 @@ export const ShortcutManager: React.FC = () => {
     (e: KeyboardEvent) => {
       const store = useShortcutStore.getState();
 
-      // Track held modifiers for the hint overlay on every event.
-      store.setHeld({
-        cmd: e.metaKey || (e.ctrlKey && !e.altKey),
-        shift: e.shiftKey,
-        alt: e.altKey,
-        ctrl: e.ctrlKey,
-      });
-
       /* While a binding is being re-recorded the pane owns the keyboard. The
          recorder lives in a settings window that may not hold DOM focus, so it
          listens at the window level — handing over entirely is the only way to
@@ -452,13 +444,6 @@ export const ShortcutManager: React.FC = () => {
     (e: KeyboardEvent) => {
       const store = useShortcutStore.getState();
 
-      store.setHeld({
-        cmd: e.metaKey || (e.ctrlKey && !e.altKey),
-        shift: e.shiftKey,
-        alt: e.altKey,
-        ctrl: e.ctrlKey,
-      });
-
       if (e.key === 'Meta' || e.key === 'Control') {
         // Releasing the command key commits the app switcher, exactly as macOS
         // does: you hold ⌘, tap ⇥ repeatedly, then let go to activate.
@@ -481,10 +466,10 @@ export const ShortcutManager: React.FC = () => {
     [clearPressed],
   );
 
-  /* Losing focus must not leave a modifier stuck on in the overlay. */
+  /* Losing focus must not leave a latch stuck on, or the next press of the
+     same chord would be swallowed as a "repeat". */
   const handleBlur = useCallback(() => {
     const store = useShortcutStore.getState();
-    store.setHeld({ cmd: false, shift: false, alt: false, ctrl: false });
     Object.keys(store.pressed).forEach((c) => store.clearPressed(c));
   }, []);
 

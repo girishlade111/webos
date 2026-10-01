@@ -44,9 +44,6 @@ const KEY_GLYPH: Record<string, string> = {
 const isModifierKey = (key: string): boolean =>
   key === 'Meta' || key === 'Control' || key === 'Shift' || key === 'Alt';
 
-/** True for keys that must never be swallowed by a shortcut while typing. */
-const isTextual = (key: string): boolean => key.length === 1 || key === 'Space' || key === 'Enter';
-
 export interface Chord {
   mods: Modifier[];
   key: string;
@@ -185,22 +182,11 @@ export const SHORTCUT_GROUPS: string[] = [
    Live state
    ========================================================================== */
 
-/** Snapshot of every modifier currently held, for the hint overlay. */
-export interface HeldModifiers {
-  cmd: boolean;
-  shift: boolean;
-  alt: boolean;
-  ctrl: boolean;
-}
-
 interface ShortcutState {
-  held: HeldModifiers;
   /** Chords that are down right now — lets us fire once per physical press. */
   pressed: Record<string, boolean>;
   /** The most recent binding to fire, for the transient HUD. */
   lastFired: { chord: string; label: string; nonce: number } | null;
-  /** Set while ⌘ is held so the menu bar can surface shortcut hints. */
-  isCommandHeld: boolean;
   /** Custom rebinds, keyed by shortcut id. */
   overrides: Record<string, string>;
   /**
@@ -210,7 +196,6 @@ interface ShortcutState {
    */
   recordingId: string | null;
 
-  setHeld: (held: HeldModifiers) => void;
   markPressed: (chord: string) => void;
   clearPressed: (chord: string) => void;
   isPressed: (chord: string) => boolean;
@@ -240,14 +225,10 @@ const persistOverrides = (overrides: Record<string, string>) => {
 };
 
 export const useShortcutStore = create<ShortcutState>((set, get) => ({
-  held: { cmd: false, shift: false, alt: false, ctrl: false },
   pressed: {},
   lastFired: null,
-  isCommandHeld: false,
   overrides: loadOverrides(),
   recordingId: null,
-
-  setHeld: (held) => set({ held, isCommandHeld: held.cmd }),
 
   markPressed: (chord) => set((s) => ({ pressed: { ...s.pressed, [chord]: true } })),
 
@@ -280,16 +261,8 @@ export const useShortcutStore = create<ShortcutState>((set, get) => ({
 }));
 
 /* ============================================================================
-   Held-modifier tracking
+   Focus helpers
    ========================================================================== */
-
-const readHeld = (e: KeyboardEvent): HeldModifiers => ({
-  cmd: e.metaKey || (e.ctrlKey && !e.altKey),
-  shift: e.shiftKey,
-  alt: e.altKey,
-  // A bare Ctrl is only distinguishable from Cmd when Meta is not also down.
-  ctrl: e.ctrlKey && !e.metaKey && !e.altKey ? false : e.ctrlKey,
-});
 
 /** True when the event target is a text-entry surface. */
 export const isTextEntryTarget = (target: EventTarget | null): boolean => {
@@ -299,16 +272,4 @@ export const isTextEntryTarget = (target: EventTarget | null): boolean => {
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 };
 
-/**
- * Whether a binding should be allowed to fire given the current focus.
- * Text fields suppress everything except bindings explicitly marked safe.
- */
-export const isBindingAllowed = (
-  def: Pick<ShortcutDef, 'scope' | 'allowInTextField'>,
-  inTextField: boolean,
-): boolean => {
-  if (!inTextField) return true;
-  return Boolean(def.allowInTextField);
-};
-
-export { isModifierKey, isTextual };
+export { isModifierKey };

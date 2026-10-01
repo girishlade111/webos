@@ -50,7 +50,7 @@ interface ProcessState {
   updateWindowSize: (windowId: string, width: number, height: number, x?: number, y?: number) => void;
   setSnapPreview: (preview: SnapPreview | null) => void;
   snapWindow: (windowId: string, side: 'left' | 'right' | 'top') => void;
-  cycleWindows: (appIdOnly?: boolean) => void;
+  cycleWindows: (appIdOnly?: boolean, direction?: number) => void;
   setAppSwitcherOpen: (open: boolean) => void;
   cycleAppSwitcher: (direction?: number) => void;
   commitAppSwitcher: () => void;
