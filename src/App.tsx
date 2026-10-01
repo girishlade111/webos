@@ -22,6 +22,8 @@ import {
   stopScreenSaverService,
   useScreenSaverStore,
 } from './core/screenSaverStore';
+import ShortcutManager from './shell/ShortcutManager';
+import { ShortcutToast } from './shell/ShortcutToast';
 
 export default function App() {
   const { osState, brightness } = useThemeStore();
@@ -105,6 +107,10 @@ export default function App() {
       {osState === 'locked' && <LoginScreen />}
       {osState === 'sleeping' && <SleepScreen />}
       {osState === 'shutdown' && <ShutdownScreen />}
+
+      {/* Global shortcut dispatcher — mounted first so it is always listening,
+          even while an OS-level screen (boot / sleep) is covering the desktop. */}
+      <ShortcutManager />
 
       {/* Main Desktop Operating System Shell */}
       {(osState === 'desktop' || osState === 'locked') && (

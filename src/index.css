@@ -678,6 +678,69 @@
   }
 }
 
+/* ============================================================================
+   Keyboard Shortcuts
+   Modifier glyphs are rendered as text in Apple's own codepoints, so they need
+   the display face and generous tracking to sit optically level with the
+   surrounding UI text.
+   ========================================================================== */
+.kb-glyph {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', system-ui,
+    sans-serif;
+  font-weight: 400;
+  /* Modifier symbols sit high in the em box; nudge them onto the baseline. */
+  line-height: 1;
+}
+
+/* A discrete key cap — used for the non-modifier half of a chord. */
+.kb-cap {
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--window-text);
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    inset 0 0 0 0.5px rgba(0, 0, 0, 0.14),
+    0 1px 1px rgba(0, 0, 0, 0.08);
+}
+.dark .kb-cap {
+  color: var(--window-text);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.16),
+    0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+/* Held-modifier overlay: fades in fast, holds, fades out gently — the same
+   asymmetric curve macOS uses so it feels responsive but never flickery. */
+@keyframes kbHintIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, -46%, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+}
+
+.kb-hint {
+  animation: kbHintIn 130ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-hint {
+    animation-duration: 1ms;
+  }
+}
+
 .desktop-icon-lift {
   filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.5));
 }
