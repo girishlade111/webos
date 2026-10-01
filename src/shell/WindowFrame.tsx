@@ -345,6 +345,9 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
   };
 
   const handleGreenMouseEnter = () => {
+    /* Hover-to-reveal has no meaning on touch, and the 450ms dwell would fire
+       the menu on every tap. Tap-to-toggle is handled by the button itself. */
+    if (isTouch) return;
     tileMenuTimeoutRef.current = setTimeout(() => {
       setShowTileMenu(true);
     }, 450);
