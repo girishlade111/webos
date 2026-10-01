@@ -15,6 +15,7 @@ import { useThemeStore } from '../core/themeStore';
 import { useProcessStore } from '../core/processStore';
 import { eventBus } from '../core/eventBus';
 import { sound } from '../core/sound';
+import { useScreenSaverStore } from '../core/screenSaverStore';
 
 /* ============================================================================
    macOS's own behaviour, encoded as a data table
@@ -308,10 +309,7 @@ const buildShortcuts = (): ShortcutDef[] => {
       description: 'Begin the screen saver immediately',
       group: 'System',
       scope: 'system',
-      run: () => {
-        // Imported lazily to avoid a cycle: the store is standalone.
-        import('../core/screenSaverStore').then((m) => m.useScreenSaverStore.getState().engage(false));
-      },
+      run: () => useScreenSaverStore.getState().engage(false),
       allowInTextField: true,
       preventDefault: true,
     },
