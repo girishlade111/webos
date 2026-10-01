@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   Palette, Image as WallpaperIcon, LayoutTemplate, Monitor, 
-  Volume2, VolumeX, Volume1, Play, Bell, Speaker, User, Wifi, Info, RotateCcw, Check, Sparkles 
+  Volume2, VolumeX, Volume1, Play, Bell, Speaker, User, Wifi, Info, RotateCcw, Check, Sparkles,
+  MonitorPlay, Lock, PlayCircle
 } from 'lucide-react';
 import { useThemeStore, ACCENT_MAP } from '../../core/themeStore';
 import { WALLPAPERS } from '../../assets/wallpapers';
@@ -9,8 +10,99 @@ import { AccentColor } from '../../types/os';
 import { sound } from '../../core/sound';
 import { useFSStore } from '../../core/fsStore';
 import { WebOSLogo } from '../../assets/appIcons';
+import {
+  IDLE_DELAY_PRESETS,
+  SCREEN_SAVER_VARIANTS,
+  useScreenSaverStore,
+} from '../../core/screenSaverStore';
 
-type SettingsPane = 'appearance' | 'wallpaper' | 'dock' | 'displays' | 'sound' | 'users' | 'network' | 'general';
+type SettingsPane = 'appearance' | 'wallpaper' | 'dock' | 'displays' | 'screen' | 'sound' | 'users' | 'network' | 'general';
+
+/**
+ * Static, CSS-only stand-in for a saver style. It mirrors the real artwork's
+ * dominant colours and motion so the picker reads correctly without spinning
+ * four live canvases behind a settings window.
+ */
+const SaverThumbnail: React.FC<{ variantId: string }> = ({ variantId }) => {
+  const h = 62;
+
+  const backdrop: React.CSSProperties =
+    variantId === 'starfield'
+      ? { background: '#000' }
+      : variantId === 'ripple'
+        ? {
+            background:
+              'radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--accent) 40%, transparent) 0%, #000 68%)',
+          }
+        : variantId === 'aurora'
+          ? {
+              background:
+                'linear-gradient(135deg, color-mix(in srgb, var(--accent) 55%, #000) 0%, #7c3aed 38%, #db2777 70%, #000 100%)',
+              filter: 'saturate(1.15)',
+            }
+          : {
+              background:
+                'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, #05070c 70%)',
+            };
+
+  return (
+    <div className="relative h-[62px] w-full overflow-hidden" style={backdrop} aria-hidden>
+      {variantId === 'starfield' && (
+        <>
+          {[
+            [8, 18, 1],
+            [22, 52, 1.4],
+            [34, 12, 0.8],
+            [46, 66, 1.1],
+            [58, 26, 0.9],
+            [70, 74, 1.3],
+            [82, 42, 1],
+            [92, 20, 0.8],
+            [64, 10, 1.2],
+            [16, 82, 1],
+          ].map(([x, y, s], i) => (
+            <span
+              key={i}
+              className="absolute rounded-full bg-white"
+              style={{ left: `${x}%`, top: `${y}%`, width: s, height: s, opacity: 0.85 }}
+            />
+          ))}
+        </>
+      )}
+
+      {variantId === 'aurora' && (
+        <>
+          <span
+            className="absolute -left-4 -top-4 h-16 w-24 rounded-full opacity-70"
+            style={{ background: 'color-mix(in srgb, var(--accent) 80%, transparent)', filter: 'blur(10px)' }}
+          />
+          <span
+            className="absolute -bottom-6 right-2 h-16 w-28 rounded-full opacity-60"
+            style={{ background: '#22d3ee', filter: 'blur(12px)' }}
+          />
+        </>
+      )}
+
+      {variantId === 'ripple' &&
+        [0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="absolute left-1/2 top-1/2 h-14 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border"
+            style={{
+              borderColor: 'color-mix(in srgb, var(--accent) 55%, white 45%)',
+              opacity: 0.5 - i * 0.14,
+              transform: `translate(-50%, -50%) scale(${1 + i * 0.22})`,
+            }}
+          />
+        ))}
+
+      {/* The mark, centred in every style */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <WebOSLogo size={variantId === 'logo' ? 30 : 24} className="rounded-[7px] shadow-md" />
+      </div>
+    </div>
+  );
+};
 
 export const SettingsApp: React.FC<{ windowId: string }> = () => {
   const [activePane, setActivePane] = useState<SettingsPane>('appearance');
@@ -33,6 +125,16 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
   } = useThemeStore();
 
   const { resetFS } = useFSStore();
+
+  const {
+    enabled: saverEnabled,
+    idleDelayMs,
+    variant: saverVariant,
+    showClock: saverShowClock,
+    lockOnWake: saverLockOnWake,
+    setSettings: setSaverSettings,
+    resetSettings: resetSaverSettings,
+  } = useScreenSaverStore();
 
   const handleCustomWallpaperUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,6 +165,7 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
             { id: 'wallpaper', label: 'Wallpaper', icon: WallpaperIcon, color: 'text-pink-500' },
             { id: 'dock', label: 'Desktop & Dock', icon: LayoutTemplate, color: 'text-blue-500' },
             { id: 'displays', label: 'Displays', icon: Monitor, color: 'text-cyan-500' },
+            { id: 'screen', label: 'Screen Saver', icon: MonitorPlay, color: 'text-teal-500' },
             { id: 'sound', label: 'Sound', icon: Volume2, color: 'text-red-500' },
             { id: 'users', label: 'Users & Accounts', icon: User, color: 'text-amber-500' },
             { id: 'network', label: 'Network & Wi-Fi', icon: Wifi, color: 'text-blue-600' },
@@ -297,6 +400,185 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
                   onChange={(e) => setBrightness(Number(e.target.value))}
                   className="w-full h-1 bg-black/15 dark:bg-white/15 rounded-lg appearance-none cursor-pointer accent-[var(--accent)]"
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Screen Saver */}
+        {activePane === 'screen' && (
+          <div className="max-w-xl space-y-6">
+            <div>
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">Screen Saver</h2>
+              <p className="text-xs text-neutral-400">
+                WebOS dims the display and starts the saver after the Mac has been idle.
+              </p>
+            </div>
+
+            {/* Start / Preview */}
+            <div className="flex items-center justify-between rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4">
+              <div>
+                <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                  Start Screen Saver
+                </h4>
+                <p className="text-[11px] text-neutral-400">
+                  Preview now. Move the mouse or press any key to dismiss.
+                </p>
+              </div>
+              <button
+                onClick={() => useScreenSaverStore.getState().engage(true)}
+                className="ml-4 flex shrink-0 items-center gap-1.5 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+              >
+                <PlayCircle size={13} />
+                Start
+              </button>
+            </div>
+
+            {/* Wait-until dropdown */}
+            <div className="space-y-1.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4">
+              <label
+                htmlFor="saver-delay"
+                className="text-xs font-semibold text-neutral-800 dark:text-neutral-200"
+              >
+                Wait until
+              </label>
+              <select
+                id="saver-delay"
+                value={Number.isFinite(idleDelayMs) ? idleDelayMs : 'never'}
+                onChange={(e) => {
+                  sound.playClick();
+                  setSaverSettings({
+                    idleDelayMs: e.target.value === 'never' ? Number.POSITIVE_INFINITY : Number(e.target.value),
+                  });
+                }}
+                disabled={!saverEnabled}
+                className="mt-1 w-full cursor-pointer rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs text-neutral-800 dark:text-neutral-200 outline-none focus:ring-2 focus:ring-[var(--accent)] disabled:opacity-40"
+              >
+                {IDLE_DELAY_PRESETS.map((preset) => (
+                  <option
+                    key={preset.label}
+                    value={Number.isFinite(preset.value) ? preset.value : 'never'}
+                  >
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Style picker */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Style</span>
+              <div className="grid grid-cols-2 gap-3">
+                {SCREEN_SAVER_VARIANTS.map((item) => {
+                  const isActive = saverVariant === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        sound.playClick();
+                        setSaverSettings({ variant: item.id });
+                      }}
+                      aria-pressed={isActive}
+                      className={`group overflow-hidden rounded-xl border text-left transition-all ${
+                        isActive
+                          ? 'border-[var(--accent)] ring-2 ring-[var(--accent)] shadow-md'
+                          : 'border-black/10 dark:border-white/10 hover:border-black/25 dark:hover:border-white/25'
+                      }`}
+                    >
+                      <SaverThumbnail variantId={item.id} />
+                      <div className="px-2.5 py-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-200">
+                            {item.name}
+                          </span>
+                          {isActive && <Check size={11} className="text-[var(--accent)]" />}
+                        </div>
+                        <p className="text-[10px] leading-tight text-neutral-400">{item.hint}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Options */}
+            <div className="space-y-3 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                    Enable Screen Saver
+                  </h4>
+                  <p className="text-[11px] text-neutral-400">
+                    Start automatically after the selected idle delay.
+                  </p>
+                </div>
+                <label className="relative ml-4 inline-flex shrink-0 cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    checked={saverEnabled}
+                    onChange={(e) => setSaverSettings({ enabled: e.target.checked })}
+                    className="peer sr-only"
+                  />
+                  <div className="peer-checked:bg-[var(--accent)] peer-focus:outline-none h-6 w-11 rounded-full bg-neutral-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full dark:bg-neutral-700" />
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                    Show clock on screen
+                  </h4>
+                  <p className="text-[11px] text-neutral-400">
+                    Large time and date, styled like the macOS lock screen.
+                  </p>
+                </div>
+                <label className="relative ml-4 inline-flex shrink-0 cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    checked={saverShowClock}
+                    onChange={(e) => setSaverSettings({ showClock: e.target.checked })}
+                    className="peer sr-only"
+                  />
+                  <div className="peer-checked:bg-[var(--accent)] peer-focus:outline-none h-6 w-11 rounded-full bg-neutral-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full dark:bg-neutral-700" />
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                    Require password
+                  </h4>
+                  <p className="text-[11px] text-neutral-400">
+                    Return to the login screen when the saver is dismissed.
+                  </p>
+                </div>
+                <label className="relative ml-4 inline-flex shrink-0 cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    checked={saverLockOnWake}
+                    onChange={(e) => setSaverSettings({ lockOnWake: e.target.checked })}
+                    className="peer sr-only"
+                  />
+                  <div className="peer-checked:bg-[var(--accent)] peer-focus:outline-none h-6 w-11 rounded-full bg-neutral-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full dark:bg-neutral-700" />
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-black/10 pt-3 dark:border-white/10">
+                <div className="flex items-center gap-2">
+                  <Lock size={13} className="text-neutral-400" />
+                  <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                    Auto-start after 5 minutes of inactivity
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    sound.playClick();
+                    resetSaverSettings();
+                  }}
+                  className="shrink-0 text-[11px] font-medium text-[var(--accent)] hover:underline"
+                >
+                  Reset
+                </button>
               </div>
             </div>
           </div>

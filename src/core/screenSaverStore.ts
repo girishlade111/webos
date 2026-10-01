@@ -93,7 +93,6 @@ interface ScreenSaverState extends ScreenSaverSettings {
   enterActivePhase: () => void;
   setSettings: (patch: Partial<ScreenSaverSettings>) => void;
   resetSettings: () => void;
-  tick: () => void;
 }
 
 const initialSettings = loadSettings();
@@ -154,12 +153,6 @@ export const useScreenSaverStore = create<ScreenSaverState>((set, get) => ({
       idleRemainingMs: DEFAULT_SCREEN_SAVER_SETTINGS.idleDelayMs,
     });
   },
-
-  tick: () => {
-    const { idleDelayMs, enabled, phase } = get();
-    if (!enabled || phase !== 'inactive') return;
-    set({ idleRemainingMs: idleDelayMs });
-  },
 }));
 
 const pickSettings = (s: ScreenSaverState): ScreenSaverSettings => ({
@@ -191,6 +184,9 @@ class ScreenSaverIdleService {
   /** Pointer travel (px) required to count as "real" movement while awake. */
   private static readonly WAKE_THRESHOLD = 6;
 
+  /** Last recorded idle tick, so `reset()` can put it back without a rerender. */
+  private lastRemaining = 0;
+
   private readonly onActivity = () => {
     this.lastActivity = Date.now();
     const store = useScreenSaverStore.getState();
@@ -199,7 +195,7 @@ class ScreenSaverIdleService {
       store.dismiss();
     } else {
       // Re-arm the countdown without re-rendering the whole shell.
-      store.setState({ idleRemainingMs: store.idleDelayMs });
+      this.lastRemaining = store.idleDelayMs;
     }
   };
 
@@ -228,7 +224,7 @@ class ScreenSaverIdleService {
     if (document.visibilityState === 'visible') this.lastActivity = Date.now();
   };
 
-  private start() {
+  start() {
     if (this.intervalId !== null) return;
 
     const events: (keyof WindowEventMap)[] = [
@@ -257,7 +253,8 @@ class ScreenSaverIdleService {
       const idleFor = Date.now() - this.lastActivity;
       const remaining = Math.max(0, store.idleDelayMs - idleFor);
 
-      if (remaining !== store.idleRemainingMs) {
+      if (remaining !== this.lastRemaining) {
+        this.lastRemaining = remaining;
         useScreenSaverStore.setState({ idleRemainingMs: remaining });
       }
 
@@ -267,7 +264,7 @@ class ScreenSaverIdleService {
     }, 1000);
   }
 
-  private stop() {
+  stop() {
     if (this.intervalId !== null) {
       window.clearInterval(this.intervalId);
       this.intervalId = null;
@@ -296,6 +293,7 @@ class ScreenSaverIdleService {
   /** Reset the countdown from outside the service (e.g. after a wake). */
   reset() {
     this.lastActivity = Date.now();
+    this.lastRemaining = 0;
   }
 }
 
