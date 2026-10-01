@@ -492,8 +492,19 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
             onMouseLeave={handleGreenMouseLeave}
           >
             <button
-              onClick={handleToggleMaximize}
+              onClick={(e) => {
+                /* On touch, a tap opens the tiling menu instead of maximizing
+                   outright — maximizing is already the default state on a
+                   compact viewport, so the tap would appear to do nothing. */
+                if (isTouch) {
+                  e.stopPropagation();
+                  setShowTileMenu((v) => !v);
+                  return;
+                }
+                handleToggleMaximize(e);
+              }}
               aria-label="Zoom window"
+              aria-expanded={showTileMenu}
               className={`flex items-center justify-center rounded-full bg-[#27c93f] border border-[#1aab29] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
                 isTouch ? 'h-11 w-11' : 'h-3 w-3'
               }`}

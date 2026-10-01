@@ -61,12 +61,15 @@ export const Dock: React.FC = () => {
     (maxAvailableWidth - 36 - itemGapsTotal) / Math.max(1, totalItemsCount)
   );
 
-  // Effective icon size: respects user's preference, but gracefully downscales to fit 100% inside screen
-  const effectiveDockSize = Math.max(26, Math.min(dockSize, maxAllowedIconSize));
+  /* Effective icon size: respects the user's preference, but downscales to fit
+     the screen and floors at the 44px hit target on touch. Without the floor a
+     26px dock icon is a coin-sized target — technically tappable, unusable. */
+  const minIconSize = isTouch ? 44 : 26;
+  const effectiveDockSize = Math.max(minIconSize, Math.min(dockSize, maxAllowedIconSize));
 
   // Calculate fisheye magnification with boundary protection
   const getIconScale = (elX: number) => {
-    if (!dockMagnification || mouseX === null) return 1;
+    if (!dockMagnification || mouseX === null || isTouch) return 1;
     const distance = Math.abs(mouseX - elX);
     const maxDistance = Math.min(130, effectiveDockSize * 2.5);
     if (distance > maxDistance) return 1;
@@ -78,6 +81,9 @@ export const Dock: React.FC = () => {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    /* Magnification is a cursor effect. Tracking a synthetic hover position on
+       touch would leave one icon permanently enlarged. */
+    if (isTouch) return;
     if (dockRef.current) {
       const rect = dockRef.current.getBoundingClientRect();
       setMouseX(e.clientX - rect.left);
