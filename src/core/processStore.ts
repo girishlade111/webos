@@ -44,6 +44,7 @@ interface ProcessState {
   closeWindow: (windowId: string) => void;
   quitApp: (appId: string) => void;
   focusWindow: (windowId: string) => void;
+  reflowToViewport: () => void;
   minimizeWindow: (windowId: string) => void;
   restoreWindow: (windowId: string) => void;
   toggleMaximize: (windowId: string) => void;
