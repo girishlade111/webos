@@ -16,6 +16,12 @@ import { Launchpad } from './shell/Launchpad';
 import { AppSwitcher } from './shell/AppSwitcher';
 import { Monitor, X } from 'lucide-react';
 import { startTimeMachineService, stopTimeMachineService } from './core/timeMachineStore';
+import { ScreenSaver } from './shell/ScreenSaver';
+import {
+  startScreenSaverService,
+  stopScreenSaverService,
+  useScreenSaverStore,
+} from './core/screenSaverStore';
 
 export default function App() {
   const { osState, brightness } = useThemeStore();
@@ -26,6 +32,33 @@ export default function App() {
   useEffect(() => {
     startTimeMachineService();
     return () => stopTimeMachineService();
+  }, []);
+
+  // The idle watcher watches real input and only counts time while the user is
+  // actually at the desktop — a screen saver during boot or on the lock screen
+  // would be nonsense.
+  useEffect(() => {
+    const sync = () => {
+      if (useThemeStore.getState().osState === 'desktop') {
+        startScreenSaverService();
+      } else {
+        stopScreenSaverService();
+        // Leaving the desktop (sleeping / shutting down) must not leave the
+        // overlay stranded on top of the lock screen.
+        const store = useScreenSaverStore.getState();
+        if (store.isVisible) store.hide();
+      }
+    };
+
+    sync();
+    const unsubscribe = useThemeStore.subscribe((state, prev) => {
+      if (state.osState !== prev.osState) sync();
+    });
+
+    return () => {
+      unsubscribe();
+      stopScreenSaverService();
+    };
   }, []);
 
   useEffect(() => {
