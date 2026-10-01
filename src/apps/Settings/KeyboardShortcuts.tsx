@@ -70,7 +70,7 @@ export const KeyboardShortcutsPane: React.FC = () => {
     // Preserve the declared macOS ordering, then append any custom groups.
     const ordered = SHORTCUT_GROUPS.filter((g) => seen.has(g));
     Array.from(seen).forEach((g) => {
-      if (!ordered.includes(g as (typeof SHORTCUT_GROUPS)[number])) ordered.push(g);
+      if (!ordered.includes(g)) ordered.push(g);
     });
     return ordered;
   }, [resolved]);

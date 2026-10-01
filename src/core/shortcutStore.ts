@@ -167,13 +167,13 @@ export interface ShortcutDef {
 }
 
 /** Settings-pane categories, in macOS's own order. */
-export const SHORTCUT_GROUPS = [
+export const SHORTCUT_GROUPS: string[] = [
   'Spotlight & Search',
   'App Switching',
   'Window Management',
   'System',
   'Mission Control & Spaces',
-] as const;
+];
 
 /* ============================================================================
    Live state
