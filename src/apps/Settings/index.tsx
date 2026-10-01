@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Palette, Image as WallpaperIcon, LayoutTemplate, Monitor, 
   Volume2, VolumeX, Volume1, Play, Bell, Speaker, User, Wifi, Info, RotateCcw, Check, Sparkles,
-  MonitorPlay, Lock, PlayCircle
+  MonitorPlay, Lock, PlayCircle, Keyboard
 } from 'lucide-react';
 import { useThemeStore, ACCENT_MAP } from '../../core/themeStore';
 import { WALLPAPERS } from '../../assets/wallpapers';
@@ -15,8 +15,9 @@ import {
   SCREEN_SAVER_VARIANTS,
   useScreenSaverStore,
 } from '../../core/screenSaverStore';
+import { KeyboardShortcutsPane } from './KeyboardShortcuts';
 
-type SettingsPane = 'appearance' | 'wallpaper' | 'dock' | 'displays' | 'screen' | 'sound' | 'users' | 'network' | 'general';
+type SettingsPane = 'appearance' | 'wallpaper' | 'dock' | 'displays' | 'screen' | 'keyboard' | 'sound' | 'users' | 'network' | 'general';
 
 /**
  * Static, CSS-only stand-in for a saver style. It mirrors the real artwork's
