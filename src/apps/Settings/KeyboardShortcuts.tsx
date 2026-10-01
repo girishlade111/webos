@@ -46,11 +46,13 @@ export const KeyboardShortcutsPane: React.FC = () => {
   const allShortcuts = useMemo(buildShortcuts, []);
   const overrides = useShortcutStore((s) => s.overrides);
   const setOverride = useShortcutStore((s) => s.setOverride);
-  const query = useShortcutStore((s) => s.pressed);
+  const recordingId = useShortcutStore((s) => s.recordingId);
+  const setRecordingId = useShortcutStore((s) => s.setRecordingId);
 
   const [activeGroup, setActiveGroup] = useState<string>(SHORTCUT_GROUPS[0]);
   const [search, setSearch] = useState<string>('');
-  const [recordingId, setRecordingId] = useState<string | null>(null);
+  /** Live preview of the chord currently held down during a recording. */
+  const [preview, setPreview] = useState<string>('');
 
   /* Resolve each binding against the user's rebinds, and drop the helper keys
      from `pressed` so a live recording can show what has been captured. */
