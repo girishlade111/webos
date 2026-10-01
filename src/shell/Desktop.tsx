@@ -11,6 +11,7 @@ import { WALLPAPERS } from '../assets/wallpapers';
 import { FSNode } from '../types/os';
 import { sound } from '../core/sound';
 import { useWidgetStore } from '../core/widgetStore';
+import { useViewportStore } from '../core/viewportStore';
 import { UnifiedWidgetRenderer } from './MacOSWidgets';
 import {
   ContextMenu,
@@ -74,6 +75,7 @@ export const Desktop: React.FC = () => {
   const { nodes, getChildren, createFolder, createFile, moveToTrash, duplicateNode, renameNode, initializeFS } = useFSStore();
   const { openWindow } = useProcessStore();
   const { desktopWidgets, toggleDesktopWidget, setWidgetGalleryOpen } = useWidgetStore();
+  const isTouch = useViewportStore((s) => s.isTouch);
 
   // Desktop View Options
   const [viewOptions, setViewOptions] = useState<DesktopViewOptions>(() => {
@@ -495,6 +497,24 @@ export const Desktop: React.FC = () => {
     dragStartPointerRef.current = { x: e.clientX, y: e.clientY };
     hasMovedBeyondThresholdRef.current = false;
 
+    /* Touch has no right-click, so a long press is the only route to an icon's
+       context menu. 500ms is the iOS convention — long enough not to fire on a
+       deliberate tap, short enough not to feel unresponsive. */
+    const longPressTimer =
+      isTouch && e.pointerType !== 'mouse'
+        ? window.setTimeout(() => {
+            if (hasMovedBeyondThresholdRef.current) return;
+            longPressFiredRef.current = true;
+            sound.playClick();
+            if (!selectedIds.includes(item.id)) setSelectedIds([item.id]);
+            setIconMenuTarget(item);
+            iconMenu.open({
+              x: e.clientX,
+              y: e.clientY,
+            });
+          }, 500)
+        : null;
+
     const onPointerMove = (moveEvent: PointerEvent) => {
       const deltaX = moveEvent.clientX - dragStartPointerRef.current.x;
       const deltaY = moveEvent.clientY - dragStartPointerRef.current.y;
@@ -502,6 +522,8 @@ export const Desktop: React.FC = () => {
 
       if (!hasMovedBeyondThresholdRef.current) {
         if (distance > 4) {
+          // Movement cancels the pending long press — this is a drag, not a hold.
+          if (longPressTimer !== null) window.clearTimeout(longPressTimer);
           hasMovedBeyondThresholdRef.current = true;
           setIsDragging(true);
           sound.playClick();
@@ -952,8 +974,11 @@ export const Desktop: React.FC = () => {
       style={{
         background: wallpaperStyle,
         backgroundSize: customWallpaperUrl ? 'cover' : 'auto',
+        /* On touch, long-press is the only way to reach a context menu, so the
+           browser must not claim the gesture for scrolling/zoom. */
+        touchAction: isTouch ? 'none' : undefined,
       }}
-      className="fixed inset-0 z-0 h-full w-full select-none overflow-hidden touch-none"
+      className="fixed inset-0 z-0 h-full w-full select-none overflow-hidden"
     >
       {/* Rubber-band Drag Selection Rectangle */}
       {selectionBox && (
@@ -1037,6 +1062,15 @@ export const Desktop: React.FC = () => {
               e.stopPropagation();
               handleItemOpen(item);
             }}
+            onClick={(e) => {
+              /* No double-click on touch, so a completed tap opens the item.
+                 `handleIconPointerDown` already consumed the drag case, and the
+                 click only fires when the pointer stayed down and lifted. */
+              if (!isTouch) return;
+              e.stopPropagation();
+              if (isCurrentlyDragged) return;
+              handleItemOpen(item);
+            }}
             onContextMenu={(e) => handleIconContextMenu(e, item)}
             style={{
               transform: `translate3d(${pos.x}px, ${pos.y}px, 0px) ${
@@ -1048,6 +1082,9 @@ export const Desktop: React.FC = () => {
                 ? 'none'
                 : 'transform 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.15), filter 0.2s ease',
               zIndex: isCurrentlyDragged ? 45 : isSelected ? 30 : 10,
+              /* Grow the tappable area past the visual cell on touch without
+                 changing the layout, so a 40px icon is still a 44px target. */
+              ...(isTouch ? { touchAction: 'manipulation' } : {}),
             }}
             className={`desktop-icon absolute top-0 left-0 flex ${
               isHorizontal ? 'flex-row items-center gap-2.5 px-2 py-1.5' : 'flex-col items-center justify-start p-2'
