@@ -165,6 +165,7 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
             { id: 'dock', label: 'Desktop & Dock', icon: LayoutTemplate, color: 'text-blue-500' },
             { id: 'displays', label: 'Displays', icon: Monitor, color: 'text-cyan-500' },
             { id: 'screen', label: 'Screen Saver', icon: MonitorPlay, color: 'text-teal-500' },
+            { id: 'keyboard', label: 'Keyboard', icon: Keyboard, color: 'text-slate-500' },
             { id: 'sound', label: 'Sound', icon: Volume2, color: 'text-red-500' },
             { id: 'users', label: 'Users & Accounts', icon: User, color: 'text-amber-500' },
             { id: 'network', label: 'Network & Wi-Fi', icon: Wifi, color: 'text-blue-600' },
