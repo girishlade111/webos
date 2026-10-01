@@ -20,6 +20,8 @@ import {
   timeMachineStats,
   useTimeMachineStore,
 } from '../core/timeMachineStore';
+import { startScreenSaverNow } from './ScreenSaver';
+import { useScreenSaverStore } from '../core/screenSaverStore';
 
 export const MenuBar: React.FC = () => {
   const {
