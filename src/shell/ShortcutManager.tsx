@@ -389,6 +389,12 @@ export const ShortcutManager: React.FC = () => {
         ctrl: e.ctrlKey,
       });
 
+      /* While a binding is being re-recorded the pane owns the keyboard. The
+         recorder lives in a settings window that may not hold DOM focus, so it
+         listens at the window level — handing over entirely is the only way to
+         stop the chord being captured from also firing the old binding. */
+      if (store.recordingId) return;
+
       // Escape: dismiss overlays. Registered here so it beats everything,
       // including the ContextMenu's own capture-phase listener.
       if (e.key === 'Escape') {
