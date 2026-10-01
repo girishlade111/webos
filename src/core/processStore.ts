@@ -127,15 +127,27 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
       }
     }, 700);
 
-    const winW = bounds?.w || 760;
-    const winH = bounds?.h || 500;
     const screenW = typeof window !== 'undefined' ? window.innerWidth : 1280;
     const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
+    const compact = screenW < COMPACT_MAX_WIDTH;
 
-    // Stagger new windows cascade
-    const offset = (state.windows.length % 6) * 28;
-    const startX = Math.max(20, Math.min(screenW - winW - 30, Math.floor((screenW - winW) / 2) + offset));
-    const startY = Math.max(40, Math.min(screenH - winH - 80, 70 + offset));
+    /* Compact viewports get one full-bleed app at a time, the way iPadOS drops
+       free-floating windows entirely. Floating a 780px window on a 390px phone
+       would leave it wider than the screen with no way to recover. */
+    const requestedW = bounds?.w || 760;
+    const requestedH = bounds?.h || 500;
+
+    // Never let a window exceed the screen, at any size.
+    const winW = Math.min(requestedW, screenW - 16);
+    const winH = Math.min(requestedH, Math.max(240, screenH - MENUBAR_HEIGHT - 40));
+
+    const fullBleed = compact;
+    const startX = fullBleed
+      ? 0
+      : Math.max(20, Math.min(screenW - winW - 30, Math.floor((screenW - winW) / 2) + (state.windows.length % 6) * 28));
+    const startY = fullBleed
+      ? MENUBAR_HEIGHT
+      : Math.max(40, Math.min(screenH - winH - 80, 70 + (state.windows.length % 6) * 28));
 
     nextZIndex += 1;
     const id = `win-${appId}-${Date.now()}`;
