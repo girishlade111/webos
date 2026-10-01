@@ -256,7 +256,7 @@ export const useShortcutStore = create<ShortcutState>((set, get) => ({
   isPressed: (chord) => Boolean(get().pressed[chord]),
 
   reportFired: (chord, label) =>
-    set((s) => ({ lastFired: { chord, label, nonce: s.lastFired?.nonce + 1 ?? 1 } })),
+    set((s) => ({ lastFired: { chord, label, nonce: (s.lastFired?.nonce ?? 0) + 1 } })),
 
   clearFired: () => set({ lastFired: null }),
 
