@@ -8,6 +8,13 @@
 
 @layer base {
   :root {
+    /* Notch / home-indicator insets. Read by viewportStore via getComputedStyle
+       so the values are available to plain JS, not just CSS. */
+    --webos-safe-top: env(safe-area-inset-top, 0px);
+    --webos-safe-right: env(safe-area-inset-right, 0px);
+    --webos-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --webos-safe-left: env(safe-area-inset-left, 0px);
+
     --accent: #007aff;
     --accent-hover: #0062cc;
     --accent-rgb: 0, 122, 255;
