@@ -781,7 +781,9 @@ export const Desktop: React.FC = () => {
 
       const mod = e.metaKey || e.ctrlKey;
 
-      if (e.code === 'Space' && selectedIds.length > 0) {
+      /* Quick Look is a *bare* Space. Without the modifier guard this also
+         matched ⌘Space and opened Quick Look alongside Spotlight. */
+      if (!mod && !e.altKey && !e.shiftKey && e.code === 'Space' && selectedIds.length > 0) {
         e.preventDefault();
         const selectedItem = desktopItems.find((item) => item.id === selectedIds[0]);
         if (selectedItem) {
