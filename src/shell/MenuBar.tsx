@@ -21,7 +21,6 @@ import {
   useTimeMachineStore,
 } from '../core/timeMachineStore';
 import { startScreenSaverNow } from './ScreenSaver';
-import { useScreenSaverStore } from '../core/screenSaverStore';
 
 export const MenuBar: React.FC = () => {
   const {
@@ -142,6 +141,17 @@ export const MenuBar: React.FC = () => {
     },
     { id: 'sys-div-2', label: '', divider: true },
     {
+      id: 'sys-saver',
+      label: 'Start Screen Saver',
+      action: startScreenSaverNow,
+    },
+    {
+      id: 'sys-saver-settings',
+      label: 'Screen Saver Settings...',
+      action: () => openWindow('settings'),
+    },
+    { id: 'sys-div-3', label: '', divider: true },
+    {
       id: 'sys-sleep',
       label: 'Sleep',
       action: () => setOSState('sleeping'),
@@ -156,7 +166,7 @@ export const MenuBar: React.FC = () => {
       label: 'Shut Down...',
       action: () => setOSState('shutdown'),
     },
-    { id: 'sys-div-3', label: '', divider: true },
+    { id: 'sys-div-4', label: '', divider: true },
     {
       id: 'sys-lock',
       label: 'Lock Screen',
