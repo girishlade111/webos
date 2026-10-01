@@ -15,34 +15,36 @@ import { APP_REGISTRY } from '../core/appRegistry';
 export const AppSwitcher: React.FC = () => {
   const isOpen = useProcessStore((s) => s.isAppSwitcherOpen);
   const index = useProcessStore((s) => s.appSwitcherIndex);
-  const runningAppIds = useProcessStore((s) => s.runningAppIds);
   const windows = useProcessStore((s) => s.windows);
 
-  /* Only the apps worth showing: hide the Finder placeholder and anything with
-     no live windows. macOS never lists Launchpad here either. */
-  const apps = useMemo(() => {
-    return runningAppIds
-      .filter((appId) => appId !== 'finder' && appId !== 'launchpad')
-      .map((appId) => {
-        const manifest = APP_REGISTRY[appId];
-        if (!manifest) return null;
+  /* The capsule must agree with the store's own ordering, or the highlighted
+     icon and the app that actually gets activated drift apart. `getSwitcherApps`
+     is the single source of truth for that order. */
+  const orderedIds = useProcessStore((s) => s.getSwitcherApps)();
 
-        /* Show the app's frontmost window title underneath, the way macOS
-           lists documents rather than bare app names. */
-        const owned = windows
-          .filter((w) => w.appId === appId)
-          .sort((a, b) => b.zIndex - a.zIndex);
-        const front = owned[0];
+  const apps = useMemo(
+    () =>
+      orderedIds
+        .map((appId) => {
+          const manifest = APP_REGISTRY[appId];
+          if (!manifest) return null;
 
-        return {
-          appId,
-          manifest,
-          title: front?.title,
-          isMinimized: owned.length > 0 && owned.every((w) => w.isMinimized),
-        };
-      })
-      .filter((a): a is NonNullable<typeof a> => a !== null);
-  }, [runningAppIds, windows]);
+          const owned = windows.filter((w) => w.appId === appId);
+          const front = owned.reduce(
+            (best, w) => (!best || w.zIndex > best.zIndex ? w : best),
+            owned[0] as (typeof owned)[number] | undefined,
+          );
+
+          return {
+            appId,
+            manifest,
+            title: front?.title,
+            isMinimized: owned.length > 0 && owned.every((w) => w.isMinimized),
+          };
+        })
+        .filter((a): a is NonNullable<typeof a> => a !== null),
+    [orderedIds, windows],
+  );
 
   /* Hold the capsule open only while a command modifier is down. Committed on
      keyup by ShortcutManager, so this is purely presentational state. */

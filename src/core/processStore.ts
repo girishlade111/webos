@@ -54,6 +54,8 @@ interface ProcessState {
   setAppSwitcherOpen: (open: boolean) => void;
   cycleAppSwitcher: (direction?: number) => void;
   commitAppSwitcher: () => void;
+  /** Switchable apps in display order (most-recently-used first). */
+  getSwitcherApps: () => string[];
   setPinnedApps: (ids: string[]) => void;
   pinApp: (appId: string) => void;
   unpinApp: (appId: string) => void;
@@ -423,6 +425,30 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
     get().focusWindow(pool[nextIdx].id);
   },
 
+  /**
+   * Switchable apps in the order the ⌘Tab capsule displays them.
+   *
+   * macOS orders this row most-recently-used first, so the app you just left
+   * sits at index 0 and each ⇥ tap walks *away* from it. Launch order would
+   * look wrong here — after using Photos then Notes, ⌘Tab must land on Notes,
+   * not on whichever app happened to open first.
+   *
+   * Finder is excluded: this shell keeps a Finder window open permanently, so
+   * listing it would put a permanent, un-actionable entry at the head of the row.
+   */
+  getSwitcherApps: () => {
+    const { windows, runningAppIds } = get();
+
+    const frontZByApp = new Map<string, number>();
+    windows.forEach((w) => {
+      frontZByApp.set(w.appId, Math.max(frontZByApp.get(w.appId) ?? 0, w.zIndex));
+    });
+
+    return runningAppIds
+      .filter((id) => id !== 'finder' && id !== 'launchpad')
+      .sort((a, b) => (frontZByApp.get(b) ?? 0) - (frontZByApp.get(a) ?? 0));
+  },
+
   setAppSwitcherOpen: (isAppSwitcherOpen) => {
     if (!isAppSwitcherOpen) {
       set({ isAppSwitcherOpen: false });
@@ -433,25 +459,25 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
        opening lands one position ahead of whatever is focused. Anchoring to the
        focused app here (rather than to 0) is what makes repeated ⇥ taps feel
        like a rotation instead of a jump to the top of the list. */
-    const { runningAppIds, focusedWindowId, windows } = get();
-    const focusedAppId = windows.find((w) => w.id === focusedWindowId)?.appId;
+    const apps = get().getSwitcherApps();
+    const focusedAppId = get().windows.find((w) => w.id === get().focusedWindowId)?.appId;
 
     let startIndex = 0;
-    if (runningAppIds.length > 1) {
-      const idx = focusedAppId ? runningAppIds.indexOf(focusedAppId) : -1;
+    if (apps.length > 1) {
+      const idx = focusedAppId ? apps.indexOf(focusedAppId) : -1;
       // Single app running: stay put rather than wrapping onto itself.
-      startIndex = idx === -1 ? 0 : (idx + 1) % runningAppIds.length;
+      startIndex = idx === -1 ? 0 : (idx + 1) % apps.length;
     }
 
     set({ isAppSwitcherOpen: true, appSwitcherIndex: startIndex });
   },
 
   cycleAppSwitcher: (direction = 1) => {
-    const { runningAppIds, appSwitcherIndex } = get();
-    if (runningAppIds.length <= 1) return;
+    const apps = get().getSwitcherApps();
+    if (apps.length <= 1) return;
 
-    const next =
-      (appSwitcherIndex + direction + runningAppIds.length) % runningAppIds.length;
+    const current = get().appSwitcherIndex;
+    const next = (current + direction + apps.length) % apps.length;
     set({ appSwitcherIndex: next });
   },
 
@@ -460,20 +486,19 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
    * released, matching macOS: you hold the modifier and let go to commit.
    */
   commitAppSwitcher: () => {
-    const { runningAppIds, appSwitcherIndex, windows, focusWindow, restoreWindow } = get();
-    const appId = runningAppIds[appSwitcherIndex];
+    const apps = get().getSwitcherApps();
+    const appId = apps[get().appSwitcherIndex];
     set({ isAppSwitcherOpen: false });
     if (!appId) return;
 
     /* Prefer the app's frontmost window. A minimized app is restored and
        focused — selecting a backgrounded app must bring it forward. */
-    const owned = windows.filter((w) => w.appId === appId);
+    const owned = get().windows.filter((w) => w.appId === appId);
     if (owned.length === 0) return;
 
-    const visible = owned.filter((w) => !w.isMinimized);
-    const target =
-      visible.sort((a, b) => b.zIndex - a.zIndex)[0] ?? owned[owned.length - 1];
+    const target = owned.reduce((best, w) => (!best || w.zIndex > best.zIndex ? w : best), owned[0]);
 
+    const { restoreWindow, focusWindow } = get();
     if (target.isMinimized) restoreWindow(target.id);
     focusWindow(target.id);
   },
