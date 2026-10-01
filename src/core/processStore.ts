@@ -52,7 +52,8 @@ interface ProcessState {
   snapWindow: (windowId: string, side: 'left' | 'right' | 'top') => void;
   cycleWindows: (appIdOnly?: boolean) => void;
   setAppSwitcherOpen: (open: boolean) => void;
-  cycleAppSwitcher: () => void;
+  cycleAppSwitcher: (direction?: number) => void;
+  commitAppSwitcher: () => void;
   setPinnedApps: (ids: string[]) => void;
   pinApp: (appId: string) => void;
   unpinApp: (appId: string) => void;
@@ -400,7 +401,7 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
     }));
   },
 
-  cycleWindows: (appIdOnly = false) => {
+  cycleWindows: (appIdOnly?: boolean, direction = 1) => {
     const state = get();
     const visible = state.windows.filter((w) => !w.isMinimized);
     if (visible.length <= 1) return;
@@ -409,25 +410,72 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
     if (appIdOnly && state.focusedWindowId) {
       const curr = state.windows.find((w) => w.id === state.focusedWindowId);
       if (curr) {
-        pool = visible.filter((w) => w.appId === curr.appId);
+        // ⌘` cycles *within* the frontmost app. If that app has a single window
+        // macOS falls back to cycling across all apps rather than doing nothing.
+        const sameApp = visible.filter((w) => w.appId === curr.appId);
+        pool = sameApp.length > 1 ? sameApp : visible;
       }
     }
     if (pool.length <= 1) return;
 
     const currentIdx = pool.findIndex((w) => w.id === state.focusedWindowId);
-    const nextIdx = (currentIdx + 1) % pool.length;
+    const nextIdx = (currentIdx + direction + pool.length) % pool.length;
     get().focusWindow(pool[nextIdx].id);
   },
 
   setAppSwitcherOpen: (isAppSwitcherOpen) => {
-    set({ isAppSwitcherOpen, appSwitcherIndex: 0 });
+    if (!isAppSwitcherOpen) {
+      set({ isAppSwitcherOpen: false });
+      return;
+    }
+
+    /* macOS selects the *next* app on the first ⇥ tap, not the current one, so
+       opening lands one position ahead of whatever is focused. Anchoring to the
+       focused app here (rather than to 0) is what makes repeated ⇥ taps feel
+       like a rotation instead of a jump to the top of the list. */
+    const { runningAppIds, focusedWindowId, windows } = get();
+    const focusedAppId = windows.find((w) => w.id === focusedWindowId)?.appId;
+
+    let startIndex = 0;
+    if (runningAppIds.length > 1) {
+      const idx = focusedAppId ? runningAppIds.indexOf(focusedAppId) : -1;
+      // Single app running: stay put rather than wrapping onto itself.
+      startIndex = idx === -1 ? 0 : (idx + 1) % runningAppIds.length;
+    }
+
+    set({ isAppSwitcherOpen: true, appSwitcherIndex: startIndex });
   },
 
-  cycleAppSwitcher: () => {
+  cycleAppSwitcher: (direction = 1) => {
     const { runningAppIds, appSwitcherIndex } = get();
-    if (runningAppIds.length === 0) return;
-    const next = (appSwitcherIndex + 1) % runningAppIds.length;
+    if (runningAppIds.length <= 1) return;
+
+    const next =
+      (appSwitcherIndex + direction + runningAppIds.length) % runningAppIds.length;
     set({ appSwitcherIndex: next });
+  },
+
+  /**
+   * Activate the highlighted app and close the switcher. Called when ⌘ is
+   * released, matching macOS: you hold the modifier and let go to commit.
+   */
+  commitAppSwitcher: () => {
+    const { runningAppIds, appSwitcherIndex, windows, focusWindow, restoreWindow } = get();
+    const appId = runningAppIds[appSwitcherIndex];
+    set({ isAppSwitcherOpen: false });
+    if (!appId) return;
+
+    /* Prefer the app's frontmost window. A minimized app is restored and
+       focused — selecting a backgrounded app must bring it forward. */
+    const owned = windows.filter((w) => w.appId === appId);
+    if (owned.length === 0) return;
+
+    const visible = owned.filter((w) => !w.isMinimized);
+    const target =
+      visible.sort((a, b) => b.zIndex - a.zIndex)[0] ?? owned[owned.length - 1];
+
+    if (target.isMinimized) restoreWindow(target.id);
+    focusWindow(target.id);
   },
 
   setPinnedApps: (pinnedAppIds) => {

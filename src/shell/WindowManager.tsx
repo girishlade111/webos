@@ -1,126 +1,21 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProcessStore } from '../core/processStore';
-import { useThemeStore } from '../core/themeStore';
 import { WindowFrame } from './WindowFrame';
-import { eventBus } from '../core/eventBus';
 
 export const WindowManager: React.FC = () => {
   const {
-    windows, focusedWindowId, snapPreview, closeWindow, minimizeWindow,
-    initializeWindows, setAppSwitcherOpen, cycleAppSwitcher, snapWindow, toggleMaximize
+    windows, snapPreview, initializeWindows
   } = useProcessStore();
-
-  const {
-    toggleSpotlight, toggleMissionControl, toggleLaunchpad,
-    closeAllOverlays, isSpotlightOpen, isLaunchpadOpen, isMissionControlOpen
-  } = useThemeStore();
 
   // Initialize default window session on first load
   useEffect(() => {
     initializeWindows();
   }, [initializeWindows]);
 
-  // Global Keyboard shortcuts listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isCmdOrCtrl = e.metaKey || e.ctrlKey;
-
-      // Spotlight: Cmd/Ctrl + Space
-      if (isCmdOrCtrl && e.code === 'Space') {
-        e.preventDefault();
-        toggleSpotlight();
-        return;
-      }
-
-      // App Switcher: Cmd/Ctrl + Tab
-      if (isCmdOrCtrl && e.key === 'Tab') {
-        e.preventDefault();
-        setAppSwitcherOpen(true);
-        cycleAppSwitcher();
-        return;
-      }
-
-      // Snap Window Keyboard Shortcuts (macOS Sequoia / Magnet / Rectangle style)
-      // Ctrl + Option + Left Arrow OR Cmd + Option + Left Arrow -> Snap Left Half
-      if (focusedWindowId && (e.ctrlKey || isCmdOrCtrl) && e.altKey && e.key === 'ArrowLeft') {
-        e.preventDefault();
-        snapWindow(focusedWindowId, 'left');
-        return;
-      }
-
-      // Ctrl + Option + Right Arrow OR Cmd + Option + Right Arrow -> Snap Right Half
-      if (focusedWindowId && (e.ctrlKey || isCmdOrCtrl) && e.altKey && e.key === 'ArrowRight') {
-        e.preventDefault();
-        snapWindow(focusedWindowId, 'right');
-        return;
-      }
-
-      // Ctrl + Option + Up Arrow -> Maximize
-      if (focusedWindowId && (e.ctrlKey || isCmdOrCtrl) && e.altKey && e.key === 'ArrowUp') {
-        e.preventDefault();
-        toggleMaximize(focusedWindowId);
-        return;
-      }
-
-      // Close Window: Cmd/Ctrl + W (Animated)
-      if (isCmdOrCtrl && (e.key === 'w' || e.key === 'W')) {
-        e.preventDefault();
-        if (focusedWindowId) {
-          eventBus.emit('request-close-window', focusedWindowId);
-        }
-        return;
-      }
-
-      // Minimize Window: Cmd/Ctrl + M (Animated)
-      if (isCmdOrCtrl && (e.key === 'm' || e.key === 'M')) {
-        e.preventDefault();
-        if (focusedWindowId) {
-          eventBus.emit('request-minimize-window', focusedWindowId);
-        }
-        return;
-      }
-
-      // Mission Control: F3 or Ctrl + ArrowUp
-      if (e.key === 'F3' || (e.ctrlKey && e.key === 'ArrowUp')) {
-        e.preventDefault();
-        toggleMissionControl();
-        return;
-      }
-
-      // Launchpad: F4 or Cmd + Shift + L
-      if (e.key === 'F4' || (isCmdOrCtrl && e.shiftKey && (e.key === 'l' || e.key === 'L'))) {
-        e.preventDefault();
-        toggleLaunchpad();
-        return;
-      }
-
-      // Escape closes overlays
-      if (e.key === 'Escape') {
-        if (isSpotlightOpen || isLaunchpadOpen || isMissionControlOpen) {
-          closeAllOverlays();
-        }
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Meta' || e.key === 'Control') {
-        setAppSwitcherOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [
-    focusedWindowId, closeWindow, minimizeWindow, toggleSpotlight,
-    toggleMissionControl, toggleLaunchpad, closeAllOverlays,
-    isSpotlightOpen, isLaunchpadOpen, isMissionControlOpen,
-    setAppSwitcherOpen, cycleAppSwitcher, snapWindow, toggleMaximize
-  ]);
+  /* Keyboard shortcuts are owned exclusively by <ShortcutManager>. This
+     component used to run its own window-level keydown listener, which meant
+     ⌘W / ⌘M / F3 / F4 could double-fire whenever both were mounted. */
 
   return (
     <>
