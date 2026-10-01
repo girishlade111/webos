@@ -574,6 +574,14 @@ export const useTimeMachineStore = create<TimeMachineState>((set, get) => ({
       useFSStore.getState().mergeNodes(restored);
       set({ phase: 'idle', progress: 0, revision: get().revision + 1 });
       sound.playClick();
+      useNotificationStore.getState().addNotification({
+        title: 'Time Machine',
+        message: `Restored ${filesRestored} file${filesRestored === 1 ? '' : 's'} from the ${new Date(
+          snapshot.createdAt
+        ).toLocaleString()} backup.`,
+        appId: 'timemachine',
+        appName: 'Time Machine',
+      });
       return { filesRestored, foldersRestored, bytesRestored };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
