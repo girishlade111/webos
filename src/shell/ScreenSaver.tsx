@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useScreenSaverStore, ScreenSaverVariant } from '../core/screenSaverStore';
-import { useThemeStore, ACCENT_MAP } from '../core/themeStore';
+import { useThemeStore } from '../core/themeStore';
 import { WebOSLogo } from '../assets/appIcons';
-import { sound } from '../core/sound';
 
 /* -------------------------------------------------------------------------- */
 /* Shared pieces                                                              */
@@ -414,8 +413,5 @@ export const ScreenSaver: React.FC = () => {
   );
 };
 
-/** Menu-bar / Apple-menu entry point: engage immediately. */
-export const startScreenSaverNow = () => {
-  sound.playClick();
-  useScreenSaverStore.getState().engage(false);
-};
+/** Apple-menu entry point: engage immediately, ignoring the idle timer. */
+export const startScreenSaverNow = () => useScreenSaverStore.getState().engage(false);
