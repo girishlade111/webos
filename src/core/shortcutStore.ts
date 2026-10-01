@@ -86,6 +86,12 @@ const normalizeKey = (e: KeyboardEvent): string => {
   // shortcuts on macOS (⌘` cycles windows, ⌘\ is a system binding).
   if (e.key === '`' || e.key === '\\') return e.key;
 
+  /* Space reports `key === ' '` but `code === 'Space'`. Every other named key
+     already matches its own name lowercased ("Tab" → "tab"), so the bare space
+     character is the only one needing a special case — without it ⌘Space
+     serialized as "cmd+ " and could never match the "cmd+space" binding. */
+  if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') return 'space';
+
   if (e.code) {
     if (e.code.startsWith('Key') || e.code.startsWith('Digit')) {
       return e.code.replace(/^Key|^Digit/, '').toLowerCase();
