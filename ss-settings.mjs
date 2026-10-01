@@ -15,10 +15,18 @@ for (let i = 0; i < 8; i++) {
 }
 console.log('desktop =', await page.evaluate(() => !!document.querySelector('.desktop-icon')));
 
-// Open Settings via the dock
-const settings = page.locator('text=System Settings').first();
-if (await settings.count()) { await settings.first().dblclick({ force: true }); }
-await page.waitForTimeout(1400);
+// Open Settings via the Apple menu
+const apple = page.locator('button, div').filter({ hasText: /^$/ }).first();
+await page.evaluate(() => {
+  const bars = Array.from(document.querySelectorAll('svg'));
+  const appleIcon = bars.find((s) => s.getAttribute('viewBox') === '0 0 170 170');
+  if (appleIcon) (appleIcon.closest('button') || appleIcon.parentElement)?.click();
+});
+await page.waitForTimeout(600);
+const sysSet = page.getByText('System Settings...', { exact: true });
+console.log('system settings menu item =', await sysSet.count());
+if (await sysSet.count()) await sysSet.first().click({ force: true });
+await page.waitForTimeout(1600);
 
 const pane = page.getByText('Screen Saver', { exact: true }).first();
 console.log('pane link count =', await page.getByText('Screen Saver', { exact: true }).count());
