@@ -5,6 +5,7 @@ import { APP_REGISTRY } from '../core/appRegistry';
 import { TrashIcon } from '../assets/appIcons';
 import { useFSStore, TRASH_ID } from '../core/fsStore';
 import { sound } from '../core/sound';
+import { useViewportStore } from '../core/viewportStore';
 
 export const Dock: React.FC = () => {
   const {
@@ -22,6 +23,8 @@ export const Dock: React.FC = () => {
   const [windowWidth, setWindowWidth] = useState<number>(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1200
   );
+  const isTouch = useViewportStore((s) => s.isTouch);
+  const safeBottom = useViewportStore((s) => s.safeArea.bottom);
 
   const dockRef = useRef<HTMLDivElement>(null);
 
@@ -135,6 +138,9 @@ export const Dock: React.FC = () => {
             transform: isAutoHidden ? 'translateY(110%)' : 'translateY(0)',
             transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             maxWidth: 'calc(100vw - 20px)',
+            /* Lifted clear of the home indicator so the dock never sits under
+               the gesture bar on a notched device. */
+            marginBottom: safeBottom > 0 ? `${safeBottom}px` : undefined,
           }}
           className="relative flex items-end gap-1.5 rounded-[24px] border border-white/30 dark:border-white/15 bg-white/30 dark:bg-[#1a1a20]/75 px-3 py-2.5 shadow-[0_25px_60px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.2)] backdrop-blur-3xl backdrop-saturate-200"
         >
