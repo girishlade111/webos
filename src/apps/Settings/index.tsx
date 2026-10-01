@@ -24,8 +24,6 @@ type SettingsPane = 'appearance' | 'wallpaper' | 'dock' | 'displays' | 'screen' 
  * four live canvases behind a settings window.
  */
 const SaverThumbnail: React.FC<{ variantId: string }> = ({ variantId }) => {
-  const h = 62;
-
   const backdrop: React.CSSProperties =
     variantId === 'starfield'
       ? { background: '#000' }
@@ -46,7 +44,7 @@ const SaverThumbnail: React.FC<{ variantId: string }> = ({ variantId }) => {
             };
 
   return (
-    <div className="relative h-[62px] w-full overflow-hidden" style={backdrop} aria-hidden>
+    <div className="relative h-[54px] w-full overflow-hidden" style={backdrop} aria-hidden>
       {variantId === 'starfield' && (
         <>
           {[
@@ -435,7 +433,7 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
             </div>
 
             {/* Wait-until dropdown */}
-            <div className="space-y-1.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4">
+            <div className="space-y-1.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-4 py-3">
               <label
                 htmlFor="saver-delay"
                 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200"
