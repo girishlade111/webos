@@ -130,6 +130,17 @@ const buildShortcuts = (): ShortcutDef[] => {
       preventDefault: true,
     },
     {
+      id: 'apps.cycleWindowsBack',
+      chord: 'cmd+shift+`',
+      label: 'Cycle Windows Backward',
+      description: 'Cycle backward through windows of the frontmost application',
+      group: 'App Switching',
+      scope: 'system',
+      run: () => proc().cycleWindows(true, -1),
+      allowInTextField: true,
+      preventDefault: true,
+    },
+    {
       id: 'apps.quit',
       chord: 'cmd+q',
       label: 'Quit Application',
