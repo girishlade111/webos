@@ -239,6 +239,7 @@ export const useShortcutStore = create<ShortcutState>((set, get) => ({
   lastFired: null,
   isCommandHeld: false,
   overrides: loadOverrides(),
+  recordingId: null,
 
   setHeld: (held) => set({ held, isCommandHeld: held.cmd }),
 
