@@ -21,6 +21,7 @@ import {
 import {
   INTERVAL_PRESETS,
   computeDiff,
+  fileVersionHistory,
   formatBytes,
   msUntilNextBackup,
   snapshotIncrementalSizes,
@@ -50,6 +51,9 @@ const dayLabel = (ts: number) => {
 
 const clockLabel = (ts: number) =>
   new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+
+const timeOnly = (ts: number) =>
+  new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
 const durationLabel = (ms: number) =>
   ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`;
@@ -244,6 +248,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
   const [confirmPrune, setConfirmPrune] = useState(false);
   const [exclusionDraft, setExclusionDraft] = useState('');
   const [checked, setChecked] = useState<string[]>([]);
+  const [focusId, setFocusId] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -311,6 +316,15 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
   const stats = useMemo(() => timeMachineStats(snapshots), [snapshots]);
   const incremental = useMemo(() => snapshotIncrementalSizes(snapshots), [snapshots]);
   const nextIn = msUntilNextBackup(config, snapshots.length ? snapshots[snapshots.length - 1].createdAt : null, now);
+
+  // Every distinct revision of the focused file across the retained history.
+  const focusHistory = useMemo(() => {
+    if (!focusId) return [];
+    const live = nodes[focusId];
+    if (!live || live.type !== 'file') return [];
+    return fileVersionHistory(snapshots, focusId);
+  }, [focusId, nodes, snapshots]);
+  const focusName = focusId ? nodes[focusId]?.name ?? 'file' : '';
 
   const busy = phase !== 'idle';
 
@@ -494,8 +508,13 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
                       <button
                         key={`${group.key}-${row.id}`}
                         type="button"
-                        onClick={() => toggleChecked(row.id)}
-                        className="flex w-full items-center gap-1.5 rounded-[5px] px-1.5 py-[3px] text-left transition-colors hover:bg-white/10"
+                        onClick={() => {
+                          toggleChecked(row.id);
+                          setFocusId(row.id);
+                        }}
+                        className={`flex w-full items-center gap-1.5 rounded-[5px] px-1.5 py-[3px] text-left transition-colors ${
+                          focusId === row.id ? 'bg-white/12' : 'hover:bg-white/10'
+                        }`}
                       >
                         <span
                           className="flex h-[13px] w-[13px] shrink-0 items-center justify-center rounded-[3px] border transition-colors"
@@ -529,7 +548,52 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
               )}
             </div>
 
-            <footer className="border-t border-white/12 px-2.5 py-2">
+            {/* Per-file version history — the "browse back through revisions" affordance */}
+            {focusHistory.length > 0 && (
+              <div className="shrink-0 border-t border-white/12 bg-black/25 px-2.5 py-2">
+                <div className="mb-1 flex items-center gap-1.5">
+                  <History size={10} className="text-white/40" />
+                  <p className="truncate text-[10px] font-semibold uppercase tracking-[0.4px] text-white/40">
+                    Versions of {focusName}
+                  </p>
+                </div>
+                <div className="max-h-[124px] space-y-0.5 overflow-y-auto">
+                  {[...focusHistory].reverse().map((version) => {
+                    const isCurrent = version.snapshot.id === selected.id;
+                    return (
+                      <button
+                        key={version.snapshot.id}
+                        type="button"
+                        disabled={busy}
+                        onClick={() => {
+                          void restoreItems(version.snapshot.id, [focusId as string]);
+                        }}
+                        className="flex w-full items-center gap-1.5 rounded-[5px] px-1.5 py-[3px] text-left transition-colors hover:bg-white/12 disabled:opacity-40"
+                      >
+                        <span
+                          className="h-1.5 w-1.5 shrink-0 rounded-full"
+                          style={{ background: isCurrent ? '#64d2ff' : 'rgba(255,255,255,0.28)' }}
+                        />
+                        <span className="min-w-0 flex-1 truncate text-[11px] text-white/80">
+                          {dayLabel(version.snapshot.createdAt)},{' '}
+                          {timeOnly(version.snapshot.createdAt)}
+                        </span>
+                        <span className="shrink-0 text-[10px] tabular-nums text-white/35">
+                          {formatBytes(version.size)}
+                        </span>
+                        {isCurrent ? (
+                          <span className="shrink-0 text-[9.5px] text-white/35">viewing</span>
+                        ) : (
+                          <RotateCcw size={10} className="shrink-0 text-white/45" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <footer className="shrink-0 border-t border-white/12 px-2.5 py-2">
               <button
                 type="button"
                 disabled={checked.length === 0 || busy}
@@ -678,7 +742,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
                             selectIndex(i);
                             setPane('browse');
                           }}
-                          className={`flex items-center gap-3 px-3 py-2 transition-colors ${
+                          className={`group flex items-center gap-3 px-3 py-2 transition-colors ${
                             active ? 'bg-[var(--accent)]/12' : 'hover:bg-black/5 dark:hover:bg-white/8'
                           }`}
                         >
@@ -722,7 +786,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
                               {durationLabel(snap.durationMs)}
                             </p>
                           </div>
-                          <div className="flex shrink-0 items-center gap-0.5">
+                          <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-100 focus-within:opacity-100 group-hover:opacity-100">
                             <button
                               type="button"
                               title="Restore this backup"
@@ -945,7 +1009,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
       <AnimatePresence>
         {restoreTarget && (
           <Alert
-            title={`Restore from ${dayLabel(restoreTarget.createdAt)} at ${clockLabel(restoreTarget.createdAt)}?`}
+            title={`Restore from ${dayLabel(restoreTarget.createdAt)} at ${timeOnly(restoreTarget.createdAt)}?`}
             message={
               <>
                 Every file will be returned to the state captured in this backup. Anything created or
