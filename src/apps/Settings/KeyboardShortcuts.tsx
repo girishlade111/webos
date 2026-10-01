@@ -273,5 +273,3 @@ export const KeyboardShortcutsPane: React.FC = () => {
 
 /** Small preview used elsewhere in the UI. */
 export const ShortcutLegend: React.FC<{ chord: string }> = ({ chord }) => <ChordDisplay chord={chord} />;
-
-export { MODIFIER_GLYPH, Check, Keyboard, parseChord };
