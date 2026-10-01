@@ -84,35 +84,69 @@ export const KeyboardShortcutsPane: React.FC = () => {
       .filter((s) => (search.trim() ? true : s.group === activeGroup));
   }, [resolved, search, activeGroup]);
 
-  /* Recording: capture one chord, ignore bare modifier presses, then commit. */
-  const handleRecord = (e: React.KeyboardEvent) => {
-    if (!recordingId) return;
-    if (isModifierKey(e.key)) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const chord = chordFromEvent(e.nativeEvent);
-    if (!chord) return;
-    /* macOS requires at least one modifier on a custom binding — a bare key
-       would swallow ordinary typing across the whole system. */
-    if (chord.mods.length === 0) return;
-
-    const serialized = serializeChord(chord);
-    /* Reject a chord that is already taken by a different binding. */
-    const conflict = resolved.find(
-      (s) => s.chord === serialized && s.id !== recordingId,
-    );
-    if (conflict) {
-      sound.playError();
-      setRecordingId(null);
+  /* Recording listens on the window, not the row: the recorder must work even
+     when focus is still in the search field. The manager stands down for the
+     duration (see its `recordingId` guard), so nothing else competes. */
+  useEffect(() => {
+    if (!recordingId) {
+      setPreview('');
       return;
     }
 
-    sound.playClick();
-    setOverride(recordingId, serialized);
-    setRecordingId(null);
-  };
+    const commit = (serialized: string) => {
+      const conflict = resolved.find((s) => s.chord === serialized && s.id !== recordingId);
+      if (conflict) {
+        sound.playError();
+      } else {
+        sound.playClick();
+        setOverride(recordingId, serialized);
+      }
+      setRecordingId(null);
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        sound.playClick();
+        setRecordingId(null);
+        return;
+      }
+
+      // Bare modifiers only update the live preview.
+      if (isModifierKey(e.key)) {
+        setPreview(
+          serializeChord({
+            mods: [
+              ...(e.metaKey || e.ctrlKey ? (['cmd'] as const) : []),
+              ...(e.altKey ? (['alt'] as const) : []),
+              ...(e.shiftKey ? (['shift'] as const) : []),
+            ],
+            key: '…',
+          }).replace('+…', '…'),
+        );
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const chord = chordFromEvent(e);
+      if (!chord) return;
+
+      // macOS requires a modifier on a custom binding; a bare key would swallow
+      // ordinary typing across the whole system.
+      if (chord.mods.length === 0) {
+        sound.playError();
+        return;
+      }
+
+      commit(serializeChord(chord));
+    };
+
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [recordingId, resolved, setOverride, setRecordingId]);
 
   const handleReset = () => {
     sound.playClick();
