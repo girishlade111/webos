@@ -13,11 +13,11 @@ const capture = async (variant, name, extraWait = 0) => {
   await page.goto('http://localhost:3111', { waitUntil: 'networkidle' });
 
   // Skip boot -> locked -> desktop
-  await page.evaluate(() => {
+  await page.evaluate((v) => {
     localStorage.setItem('webos_screen_saver_v1', JSON.stringify({
-      enabled: true, idleDelayMs: 300000, variant, showClock: true, lockOnWake: false,
+      enabled: true, idleDelayMs: 300000, variant: v, showClock: true, lockOnWake: false,
     }));
-  });
+  }, variant);
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
   // force desktop
@@ -34,12 +34,6 @@ const capture = async (variant, name, extraWait = 0) => {
     if (onDesktop) break;
   }
 
-  await page.evaluate((v) => {
-    // trigger directly through the store via the Apple menu path
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'F13' }));
-  }, variant);
-
-  // Engage via menu
   const apple = page.locator('svg').first();
   await apple.click({ force: true }).catch(() => {});
   await page.waitForTimeout(400);
