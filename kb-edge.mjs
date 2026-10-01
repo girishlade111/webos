@@ -19,15 +19,19 @@ for (let i = 0; i < 8; i++) {
 const frontApp = () => page.evaluate(() => document.querySelector('[class*="font-bold"]')?.innerText?.trim());
 
 // 1) Cmd+Space opens Spotlight, Escape closes it
+/* Match the real Spotlight placeholder — `*="earch"` is too loose and also
+   hits the Music window's own filter field. */
+const sl = () =>
+  page.evaluate(() => !!document.querySelector('input[placeholder*="Spotlight Search" i]'));
+
 await page.keyboard.down('Meta');
 await page.keyboard.press('Space');
 await page.keyboard.up('Meta');
 await page.waitForTimeout(600);
-const sl = await page.evaluate(() => !!document.querySelector('input[placeholder*="earch" i]'));
-console.log('1. Cmd+Space opens Spotlight =', sl);
+console.log('1. Cmd+Space opens Spotlight =', await sl());
 await page.keyboard.press('Escape');
 await page.waitForTimeout(400);
-console.log('   Escape closes it =', await page.evaluate(() => !document.querySelector('input[placeholder*="earch" i]')));
+console.log('   Escape closes it =', !(await sl()));
 
 // 2) typing in a text field must NOT trigger shortcuts
 await page.click('#dock-icon-notes', { force: true });
@@ -38,7 +42,7 @@ if (await ta.count()) {
   await page.waitForTimeout(300);
   await page.keyboard.type('cmd q test', { delay: 40 });
   await page.waitForTimeout(500);
-  const stillOpen = await page.evaluate(() => !!document.querySelector('input[placeholder*="earch" i]'));
+  const stillOpen = await sl();
   const notesAlive = await page.evaluate(() => document.body.innerText.includes('Notes') || document.body.innerText.includes('NOTES'));
   console.log('2. typing "cmd q test" did not open Spotlight =', !stillOpen);
   console.log('   notes window survived =', notesAlive);
