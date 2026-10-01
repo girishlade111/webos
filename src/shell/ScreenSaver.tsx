@@ -391,7 +391,7 @@ export const ScreenSaver: React.FC = () => {
   const isWaking = phase === 'waking';
   /* With the clock occupying the upper third, the mark drops below centre so
      the two never overlap — the same vertical split the lock screen uses. */
-  const markOffsetY = showClock ? 118 : 0;
+  const markOffsetY = showClock ? 104 : 0;
 
   return (
     <div
