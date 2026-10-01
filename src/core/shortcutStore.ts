@@ -269,6 +269,8 @@ export const useShortcutStore = create<ShortcutState>((set, get) => ({
   },
 
   getChord: (id, fallback) => get().overrides[id] ?? fallback,
+
+  setRecordingId: (recordingId) => set({ recordingId }),
 }));
 
 /* ============================================================================
