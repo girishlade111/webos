@@ -197,6 +197,12 @@ interface ShortcutState {
   isCommandHeld: boolean;
   /** Custom rebinds, keyed by shortcut id. */
   overrides: Record<string, string>;
+  /**
+   * The shortcut currently being re-recorded, or null. While set, the global
+   * dispatcher stands down so the recorder owns the keyboard — otherwise the
+   * very chord being captured would also fire the old binding.
+   */
+  recordingId: string | null;
 
   setHeld: (held: HeldModifiers) => void;
   markPressed: (chord: string) => void;
@@ -206,6 +212,7 @@ interface ShortcutState {
   clearFired: () => void;
   setOverride: (id: string, chord: string | null) => void;
   getChord: (id: string, fallback: string) => string;
+  setRecordingId: (id: string | null) => void;
 }
 
 const OVERRIDES_KEY = 'webos_shortcut_overrides_v1';
