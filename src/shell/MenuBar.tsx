@@ -21,8 +21,11 @@ import {
   useTimeMachineStore,
 } from '../core/timeMachineStore';
 import { startScreenSaverNow } from './ScreenSaver';
+import { useViewportStore } from '../core/viewportStore';
 
 export const MenuBar: React.FC = () => {
+  const isCompact = useViewportStore((s) => s.isCompact);
+  const safeArea = useViewportStore((s) => s.safeArea);
   const {
     activeMenuDropdown, setActiveMenuDropdown,
     toggleSpotlight, toggleControlCenter, toggleNotificationCenter,
@@ -207,10 +210,17 @@ export const MenuBar: React.FC = () => {
   return (
     <div
       ref={menuBarRef}
+      style={{
+        /* Sit below the notch/status area rather than under it. */
+        paddingTop: safeArea.top > 0 ? `${safeArea.top}px` : undefined,
+        height: safeArea.top > 0 ? `${28 + safeArea.top}px` : undefined,
+        paddingLeft: safeArea.left > 0 ? `calc(12px + ${safeArea.left}px)` : undefined,
+        paddingRight: safeArea.right > 0 ? `calc(12px + ${safeArea.right}px)` : undefined,
+      }}
       className="fixed top-0 left-0 right-0 z-[8000] flex h-7 select-none items-center justify-between border-b border-[var(--menu-bar-border)] bg-[var(--menu-bar-bg)] px-3 text-xs text-[var(--menu-bar-text)] glass-bar"
     >
       {/* Left Menu Items */}
-      <div className="flex items-center gap-1 font-medium">
+      <div className={`flex items-center font-medium ${isCompact ? 'gap-0' : 'gap-1'}`}>
         {/* System Logo Menu */}
         <div className="relative">
           <button
@@ -283,8 +293,13 @@ export const MenuBar: React.FC = () => {
           )}
         </div>
 
-        {/* Dynamic App Menus (File, Edit, View, etc.) */}
-        {appMenus.map((menuDef) => {
+        {/* Dynamic App Menus (File, Edit, View, etc.)
+
+            On a compact width the per-app menus are dropped: the frontmost
+            window is full-bleed there, so the bar has to hold the system menu,
+            the app name and the status cluster in 28px of height without
+            wrapping. The Apple menu still carries the system-level actions. */}
+        {(isCompact ? [] : appMenus).map((menuDef) => {
           const menuKey = `menu_${menuDef.title.toLowerCase()}`;
           const isOpen = activeMenuDropdown === menuKey;
 

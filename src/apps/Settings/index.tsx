@@ -156,9 +156,18 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
 
   return (
     <div className="flex h-full w-full bg-[var(--window-bg)] text-[var(--window-text)] select-none">
-      {/* Settings Navigation Sidebar */}
-      <div className="w-52 shrink-0 border-r border-black/10 dark:border-white/10 bg-[var(--window-sidebar)] p-3 flex flex-col justify-between">
-        <div className="space-y-1">
+      {/* Settings Navigation Sidebar
+          On a compact width the 208px column would leave the pane almost no
+          room, so it collapses to a horizontal scrolling rail of the same
+          categories — the pane keeps its full width. */}
+      <div
+        className={`shrink-0 border-black/10 bg-[var(--window-sidebar)] dark:border-white/10 ${
+          isCompact
+            ? 'flex w-full flex-col border-b'
+            : 'flex w-52 flex-col justify-between border-r p-3'
+        }`}
+      >
+        <div className={isCompact ? 'flex gap-1 overflow-x-auto p-2' : 'space-y-1'}>
           {[
             { id: 'appearance', label: 'Appearance', icon: Palette, color: 'text-indigo-500' },
             { id: 'wallpaper', label: 'Wallpaper', icon: WallpaperIcon, color: 'text-pink-500' },
@@ -180,11 +189,11 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
                   sound.playClick();
                   setActivePane(item.id as SettingsPane);
                 }}
-                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors text-left ${
+                className={`flex shrink-0 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors text-left ${
                   isActive
                     ? 'bg-[var(--accent)] text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10'
-                }`}
+                } ${isCompact ? 'whitespace-nowrap' : 'w-full'}`}
               >
                 <Icon size={14} className={isActive ? 'text-white' : item.color} />
                 <span className="truncate">{item.label}</span>

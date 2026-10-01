@@ -121,6 +121,8 @@ export const Desktop: React.FC = () => {
   const dragStartPointerRef = useRef<Point>({ x: 0, y: 0 });
   const dragStartPositionsRef = useRef<Record<string, Point>>({});
   const hasMovedBeyondThresholdRef = useRef<boolean>(false);
+  /** Set when a long press opened the icon menu, so the click handler can skip opening. */
+  const longPressFiredRef = useRef<boolean>(false);
 
   // Rubber-band selection state
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
@@ -509,8 +511,8 @@ export const Desktop: React.FC = () => {
             if (!selectedIds.includes(item.id)) setSelectedIds([item.id]);
             setIconMenuTarget(item);
             iconMenu.open({
-              x: e.clientX,
-              y: e.clientY,
+              clientX: e.clientX,
+              clientY: e.clientY,
             });
           }, 500)
         : null;
@@ -555,6 +557,7 @@ export const Desktop: React.FC = () => {
     const onPointerUp = () => {
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
+      if (longPressTimer !== null) window.clearTimeout(longPressTimer);
 
       if (hasMovedBeyondThresholdRef.current) {
         setIsDragging(false);
@@ -1065,9 +1068,14 @@ export const Desktop: React.FC = () => {
             onClick={(e) => {
               /* No double-click on touch, so a completed tap opens the item.
                  `handleIconPointerDown` already consumed the drag case, and the
-                 click only fires when the pointer stayed down and lifted. */
+                 click only fires when the pointer stayed down and lifted. A long
+                 press must not also open the app, though. */
               if (!isTouch) return;
               e.stopPropagation();
+              if (longPressFiredRef.current) {
+                longPressFiredRef.current = false;
+                return;
+              }
               if (isCurrentlyDragged) return;
               handleItemOpen(item);
             }}
