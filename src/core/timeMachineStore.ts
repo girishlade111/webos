@@ -837,34 +837,6 @@ export const stopTimeMachineService = (): void => {
   }
 };
 
-/** Read a single file's payload out of a snapshot — used by the preview pane. */
-export const readSnapshotFile = async (
-  snapshot: TimeMachineSnapshot,
-  nodeId: string
-): Promise<string | null> => {
-  const entry = snapshot.nodes[nodeId];
-  if (!entry || entry.type !== 'file') return null;
-  const blobs = await loadBlobs();
-  return entry.contentHash ? blobs[entry.contentHash] ?? '' : '';
-};
-
-/** Roll a file back to its most recent version at or before `before`. */
-export const restoreLatestVersionBefore = async (
-  fileId: string,
-  before: number
-): Promise<boolean> => {
-  const { snapshots, phase } = useTimeMachineStore.getState();
-  if (phase !== 'idle') return false;
-  const target = [...snapshots]
-    .reverse()
-    .find((s) => s.createdAt <= before && s.nodes[fileId]);
-  if (!target) return false;
-  const result = await useTimeMachineStore
-    .getState()
-    .restoreItems(target.id, [fileId]);
-  return result !== null;
-};
-
 /** Every distinct revision of a file across the retained snapshot history. */
 export const fileVersionHistory = (
   snapshots: TimeMachineSnapshot[],
