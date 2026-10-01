@@ -150,6 +150,8 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
     updateWindowPosition, updateWindowSize, setSnapPreview, snapWindow
   } = useProcessStore();
   const { minimizeEffect } = useThemeStore();
+  const isCompact = useViewportStore((s) => s.isCompact);
+  const isTouch = useViewportStore((s) => s.isTouch);
 
   const [isHoveringControls, setIsHoveringControls] = useState<boolean>(false);
   const [isInteractive, setIsInteractive] = useState<boolean>(false); // whether actively dragged or resized
@@ -431,25 +433,33 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
         win.isFocused ? 'ring-1 ring-black/10 dark:ring-white/10' : 'opacity-[0.98]'
       }`}
     >
-      {/* Title Bar */}
+      {/* Title Bar
+          On touch the traffic lights grow to full-size hit targets and stop
+          revealing hover glyphs — there is no hover, and a 12px dot is far below
+          the 44px minimum a finger needs. */}
       <div
         onMouseDown={handleTitleBarMouseDown}
         onDoubleClick={handleToggleMaximize}
-        className="flex h-[38px] items-center justify-between border-b border-black/10 dark:border-white/10 px-3 bg-[var(--window-header)] cursor-default select-none shrink-0"
+        className={`flex shrink-0 select-none items-center justify-between border-b border-black/10 bg-[var(--window-header)] dark:border-white/10 ${
+          isTouch ? 'h-[48px] px-2' : 'h-[38px] px-3'
+        } ${isCompact ? '' : 'cursor-default'}`}
       >
         {/* macOS Traffic Light Buttons */}
         <div
           onMouseEnter={() => setIsHoveringControls(true)}
           onMouseLeave={() => setIsHoveringControls(false)}
-          className="flex items-center gap-[7.5px]"
+          className={`flex items-center ${isTouch ? '-ml-1 gap-0' : 'gap-[7.5px]'}`}
         >
           {/* Close (Red) */}
           <button
             onClick={handleClose}
-            className="flex h-3 w-3 items-center justify-center rounded-full bg-[#ff5f56] border border-[#e0443e] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs"
+            aria-label="Close window"
+            className={`flex items-center justify-center rounded-full bg-[#ff5f56] border border-[#e0443e] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
+              isTouch ? 'h-11 w-11' : 'h-3 w-3'
+            }`}
             title="Close (⌘W)"
           >
-            {isHoveringControls && (
+            {isHoveringControls && !isTouch && (
               <svg width="6" height="6" viewBox="0 0 6 6" fill="none" className="opacity-90">
                 <path d="M0.75 0.75L5.25 5.25M5.25 0.75L0.75 5.25" stroke="#4c0000" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
@@ -459,10 +469,13 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
           {/* Minimize (Yellow) */}
           <button
             onClick={handleMinimize}
-            className="flex h-3 w-3 items-center justify-center rounded-full bg-[#ffbd2e] border border-[#dea123] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs"
+            aria-label="Minimize window"
+            className={`flex items-center justify-center rounded-full bg-[#ffbd2e] border border-[#dea123] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
+              isTouch ? 'h-11 w-11' : 'h-3 w-3'
+            }`}
             title="Minimize (⌘M)"
           >
-            {isHoveringControls && (
+            {isHoveringControls && !isTouch && (
               <svg width="6" height="2" viewBox="0 0 6 2" fill="none" className="opacity-90">
                 <path d="M0.5 1H5.5" stroke="#5c3800" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
@@ -477,10 +490,13 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
           >
             <button
               onClick={handleToggleMaximize}
-              className="flex h-3 w-3 items-center justify-center rounded-full bg-[#27c93f] border border-[#1aab29] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs"
+              aria-label="Zoom window"
+              className={`flex items-center justify-center rounded-full bg-[#27c93f] border border-[#1aab29] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
+                isTouch ? 'h-11 w-11' : 'h-3 w-3'
+              }`}
               title="Zoom / Fullscreen (Hold for Tiling Options)"
             >
-              {isHoveringControls && (
+              {isHoveringControls && !isTouch && (
                 <svg width="6" height="6" viewBox="0 0 6 6" fill="none" className="opacity-90">
                   <path d="M1 5L5 1M5 1H2M5 1V4" stroke="#003e00" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -538,13 +554,19 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
           </div>
         </div>
 
-        {/* Window Title */}
-        <span className="font-medium text-[13px] tracking-tight text-neutral-800 dark:text-neutral-200 truncate max-w-sm pointer-events-none drop-shadow-xs">
+        {/* Window Title — pinned to the leading edge on touch, where the
+            traffic-light cluster is wide and a centred title would collide. */}
+        <span
+          className={`pointer-events-none truncate font-medium tracking-tight text-neutral-800 drop-shadow-xs dark:text-neutral-200 ${
+            isTouch ? 'max-w-[45%] text-left text-sm' : 'max-w-sm text-center text-[13px]'
+          }`}
+        >
           {win.title}
         </span>
 
-        {/* Right spacing balance */}
-        <div className="w-12" />
+        {/* Right spacing balance — matches the traffic-light cluster width so the
+            title stays optically centred on pointer devices. */}
+        <div className={isTouch ? 'w-4' : 'w-12'} />
       </div>
 
       {/* App Component Container with Suspense Lazy Loader */}
