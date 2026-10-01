@@ -135,7 +135,10 @@ export const useScreenSaverStore = create<ScreenSaverState>((set, get) => ({
   },
 
   hide: () => {
+    // A re-engage during the wake fade supersedes this teardown.
+    if (get().phase !== 'waking') return;
     set({ phase: 'inactive', isVisible: false, isPreview: false });
+    screenSaverIdle.reset();
   },
 
   setSettings: (patch) => {
@@ -177,7 +180,6 @@ const pickSettings = (s: ScreenSaverState): ScreenSaverSettings => ({
 class ScreenSaverIdleService {
   private lastActivity = Date.now();
   private intervalId: number | null = null;
-  private timerId: number | null = null;
   /** Pointer positions, to ignore sub-pixel jitter from a resting hand. */
   private lastPointer = { x: -1, y: -1 };
 
@@ -268,10 +270,6 @@ class ScreenSaverIdleService {
     if (this.intervalId !== null) {
       window.clearInterval(this.intervalId);
       this.intervalId = null;
-    }
-    if (this.timerId !== null) {
-      window.clearTimeout(this.timerId);
-      this.timerId = null;
     }
 
     const events: (keyof WindowEventMap)[] = [
