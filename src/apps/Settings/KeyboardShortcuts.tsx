@@ -1,13 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import { Check, Keyboard, RotateCcw, Search } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { RotateCcw, Search } from 'lucide-react';
 import {
-  MODIFIER_GLYPH,
   SHORTCUT_GROUPS,
   ShortcutDef,
   chordFromEvent,
   formatChordParts,
   isModifierKey,
-  parseChord,
   serializeChord,
   useShortcutStore,
 } from '../../core/shortcutStore';
