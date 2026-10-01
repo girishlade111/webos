@@ -7,6 +7,7 @@ import { useThemeStore } from '../core/themeStore';
 import { APP_REGISTRY } from '../core/appRegistry';
 import { sound } from '../core/sound';
 import { eventBus } from '../core/eventBus';
+import { useViewportStore } from '../core/viewportStore';
 
 interface WindowFrameProps {
   window: WindowState;
