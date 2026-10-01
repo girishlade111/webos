@@ -136,6 +136,9 @@ export default function App() {
           <Launchpad />
           <AppSwitcher />
 
+          {/* Shortcut confirmation toast */}
+          <ShortcutToast />
+
           {/* Inactivity Screen Saver — topmost shell layer */}
           <ScreenSaver />
         </>
