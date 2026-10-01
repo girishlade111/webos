@@ -17,6 +17,25 @@ export const WindowManager: React.FC = () => {
      component used to run its own window-level keydown listener, which meant
      ⌘W / ⌘M / F3 / F4 could double-fire whenever both were mounted. */
 
+  /* Re-fit windows when the viewport changes. `reflowToViewport` is stable, so
+     this does not re-subscribe on every window mutation. */
+  const { reflowToViewport } = useProcessStore();
+  useEffect(() => {
+    const handle = () => reflowToViewport();
+
+    // Resize alone misses mobile browser chrome collapsing on scroll, which
+    // changes the visual viewport without firing `resize` on the window.
+    window.addEventListener('resize', handle);
+    window.addEventListener('orientationchange', handle);
+    window.visualViewport?.addEventListener('resize', handle);
+
+    return () => {
+      window.removeEventListener('resize', handle);
+      window.removeEventListener('orientationchange', handle);
+      window.visualViewport?.removeEventListener('resize', handle);
+    };
+  }, [reflowToViewport]);
+
   return (
     <>
       {/* macOS Sequoia Snap Preview Overlay */}
