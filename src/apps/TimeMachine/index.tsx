@@ -576,7 +576,7 @@ export const TimeMachineApp: React.FC<{ windowId: string; initialParams?: any }>
                         />
                         <span className="min-w-0 flex-1 truncate text-[11px] text-white/80">
                           {dayLabel(version.snapshot.createdAt)},{' '}
-                          {timeOnly(version.snapshot.createdAt)}
+                          {clockLabel(version.snapshot.createdAt)}
                         </span>
                         <span className="shrink-0 text-[10px] tabular-nums text-white/35">
                           {formatBytes(version.size)}
