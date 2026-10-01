@@ -26,7 +26,9 @@ for (let i = 0; i < 8; i++) {
 }
 console.log('desktop reached, ss mounted =', await page.evaluate(() => !!document.querySelector('.ss-root')));
 
-// Now go completely idle
+// Now go completely idle (the mouse must be tracked first, otherwise its very
+// first move reads as a large jump — same as a real machine)
+await page.mouse.move(640, 400);
 await page.waitForTimeout(5200);
 console.log('after 5.2s idle -> ss mounted =', await page.evaluate(() => !!document.querySelector('.ss-root')));
 await page.screenshot({ path: `${OUT}/ss-idle-auto.png` });
@@ -58,6 +60,7 @@ for (let i = 0; i < 8; i++) {
   await page.waitForTimeout(700);
   if (await page.evaluate(() => !!document.querySelector('.ss-root'))) break;
 }
+await page.mouse.move(640, 400);
 await page.waitForTimeout(5200);
 console.log('lockOnWake: ss mounted =', await page.evaluate(() => !!document.querySelector('.ss-root')));
 await page.mouse.move(500, 300);
