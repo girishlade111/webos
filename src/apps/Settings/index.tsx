@@ -407,7 +407,7 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
 
         {/* Screen Saver */}
         {activePane === 'screen' && (
-          <div className="max-w-xl space-y-6">
+          <div className="max-w-xl space-y-4">
             <div>
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">Screen Saver</h2>
               <p className="text-xs text-neutral-400">
@@ -416,7 +416,7 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
             </div>
 
             {/* Start / Preview */}
-            <div className="flex items-center justify-between rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-4">
+            <div className="flex items-center justify-between rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-4 py-3">
               <div>
                 <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                   Start Screen Saver
