@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { WindowState } from '../types/os';
 import { sound } from './sound';
 import { useThemeStore } from './themeStore';
+import { COMPACT_MAX_WIDTH, MENUBAR_HEIGHT } from './viewportStore';
 
 const WINDOWS_STORAGE_KEY = 'webos_windows_v1';
 const DOCK_PINNED_STORAGE_KEY = 'webos_dock_pinned_v3';
