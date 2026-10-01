@@ -423,7 +423,7 @@ export const ScreenSaver: React.FC = () => {
       />
 
       {/* macOS shows no hint here — movement alone dismisses it. */}
-      <span className="sr-only" aria-live="polite">
+      <span className="sr-only pointer-events-none" aria-live="polite">
         Screen saver active. Move the mouse or press any key to continue.
       </span>
     </div>
