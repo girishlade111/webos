@@ -10,16 +10,23 @@ import { WebOSLogo } from '../assets/appIcons';
 /**
  * The mark itself. Kept as one component so all four variants share identical
  * optical weight — only the surrounding artwork changes.
+ *
+ * `offsetY` exists because the clock sits in the upper third of the screen:
+ * when it's shown, the mark drops below centre so the two never collide.
  */
-const FloatingMark: React.FC = () => (
-  <div className="relative flex h-[168px] w-[168px] items-center justify-center">
-    {/* Ambient bloom behind the plate */}
+const FloatingMark: React.FC<{ offsetY?: number }> = ({ offsetY = 0 }) => (
+  <div
+    className="relative flex h-[168px] w-[168px] items-center justify-center"
+    style={{ transform: `translateY(${offsetY}px)` }}
+  >
+    {/* Ambient bloom behind the plate — wide and soft, the way Apple's own
+        savers let light spill rather than ring the mark with a hard edge. */}
     <div
-      className="ss-glow pointer-events-none absolute left-1/2 top-1/2 h-[340px] w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+      className="ss-glow pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full"
       style={{
         background:
-          'radial-gradient(circle, color-mix(in srgb, var(--accent) 42%, transparent) 0%, transparent 68%)',
-        filter: 'blur(30px)',
+          'radial-gradient(circle, color-mix(in srgb, var(--accent) 30%, transparent) 0%, color-mix(in srgb, var(--accent) 10%, transparent) 42%, transparent 72%)',
+        filter: 'blur(46px)',
       }}
     />
 
@@ -29,7 +36,8 @@ const FloatingMark: React.FC = () => (
         key={i}
         className="ss-ring pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
-          border: '1px solid color-mix(in srgb, var(--accent) 70%, white 30%)',
+          border: '1px solid color-mix(in srgb, var(--accent) 40%, white 60%)',
+          filter: 'blur(0.4px)',
           animationDelay: `${i * 2.5}s`,
         }}
       />
@@ -62,7 +70,13 @@ const FloatingMark: React.FC = () => (
 /* Variants                                                                   */
 /* -------------------------------------------------------------------------- */
 
-const LogoVariant: React.FC = () => (
+/** Every variant receives the same prop so the overlay can compose them. */
+interface VariantProps {
+  /** Vertical nudge applied to the mark, so it clears the clock. */
+  markOffsetY: number;
+}
+
+const LogoVariant: React.FC<VariantProps> = ({ markOffsetY }) => (
   <>
     <div
       className="pointer-events-none absolute left-1/2 top-1/2 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70"
@@ -72,11 +86,11 @@ const LogoVariant: React.FC = () => (
         filter: 'blur(56px)',
       }}
     />
-    <FloatingMark />
+    <FloatingMark offsetY={markOffsetY} />
   </>
 );
 
-const AuroraVariant: React.FC = () => {
+const AuroraVariant: React.FC<VariantProps> = ({ markOffsetY }) => {
   const blobs = [
     {
       anim: 'ssAurora1',
@@ -134,13 +148,13 @@ const AuroraVariant: React.FC = () => {
       </div>
       <div className="absolute inset-0 bg-black/25" />
       <div className="relative opacity-90">
-        <FloatingMark />
+        <FloatingMark offsetY={markOffsetY} />
       </div>
     </>
   );
 };
 
-const StarfieldVariant: React.FC = () => {
+const StarfieldVariant: React.FC<VariantProps> = ({ markOffsetY }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -260,13 +274,13 @@ const StarfieldVariant: React.FC = () => {
         }}
       />
       <div className="relative opacity-95">
-        <FloatingMark />
+        <FloatingMark offsetY={markOffsetY} />
       </div>
     </>
   );
 };
 
-const RippleVariant: React.FC = () => {
+const RippleVariant: React.FC<VariantProps> = ({ markOffsetY }) => {
   const rings = useMemo(() => Array.from({ length: 7 }, (_, i) => i), []);
 
   return (
@@ -300,13 +314,13 @@ const RippleVariant: React.FC = () => {
         </div>
       </div>
       <div className="relative">
-        <FloatingMark />
+        <FloatingMark offsetY={markOffsetY} />
       </div>
     </>
   );
 };
 
-const ARTWORK: Record<ScreenSaverVariant, React.FC> = {
+const ARTWORK: Record<ScreenSaverVariant, React.FC<VariantProps>> = {
   logo: LogoVariant,
   aurora: AuroraVariant,
   starfield: StarfieldVariant,
@@ -336,15 +350,13 @@ const SaverClock: React.FC = () => {
   });
 
   return (
-    <div className="ss-rising pointer-events-none absolute inset-x-0 top-[13vh] z-20 flex flex-col items-center text-white">
-      <div
-        className="ss-clock"
-        style={{ fontSize: 'clamp(64px, 11vw, 132px)', lineHeight: 1.02 }}
-      >
+    // macOS anchors the clock to the upper third, not the optical centre.
+    <div className="ss-rising pointer-events-none absolute inset-x-0 top-[11vh] z-20 flex flex-col items-center text-white">
+      <div className="ss-clock" style={{ fontSize: 'clamp(56px, 9.5vw, 118px)', lineHeight: 1 }}>
         {time}
       </div>
       <div
-        className="ss-date mt-1.5 text-white/85"
+        className="ss-date mt-3 text-white/85"
         style={{ fontSize: 'clamp(15px, 1.5vw, 21px)', fontWeight: 500 }}
       >
         {date}
@@ -377,6 +389,9 @@ export const ScreenSaver: React.FC = () => {
   if (!isVisible) return null;
 
   const isWaking = phase === 'waking';
+  /* With the clock occupying the upper third, the mark drops below centre so
+     the two never overlap — the same vertical split the lock screen uses. */
+  const markOffsetY = showClock ? 118 : 0;
 
   return (
     <div
@@ -390,9 +405,11 @@ export const ScreenSaver: React.FC = () => {
       {/* Pass 1 — dim the desktop out from under the artwork */}
       <div className="ss-dim pointer-events-none absolute inset-0 bg-black" />
 
-      {/* Pass 2 — the artwork + clock */}
-      <div className="ss-art pointer-events-none absolute inset-0 overflow-hidden">
-        <Artwork />
+      {/* Pass 2 — the artwork + clock. This layer is itself the centring box:
+          variants paint full-bleed backgrounds with `absolute inset-0` children
+          and let the mark fall in as a centred flex item. */}
+      <div className="ss-art pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+        <Artwork markOffsetY={markOffsetY} />
         {showClock && <SaverClock />}
       </div>
 
