@@ -129,6 +129,9 @@ export default function App() {
           <MissionControl />
           <Launchpad />
           <AppSwitcher />
+
+          {/* Inactivity Screen Saver — topmost shell layer */}
+          <ScreenSaver />
         </>
       )}
     </div>
