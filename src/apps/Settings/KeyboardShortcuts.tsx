@@ -236,9 +236,10 @@ export const KeyboardShortcutsPane: React.FC = () => {
 
                   {/* Chord / recorder */}
                   {isRecording ? (
-                    <div className="kb-hint shrink-0 rounded-md border border-[var(--accent)] bg-[var(--accent)]/10 px-2 py-1">
-                      <ChordDisplay chord={Object.keys(query)[0] ?? ''} />
-                      {!Object.keys(query).length && (
+                    <div className="kb-hint flex shrink-0 items-center rounded-md border border-[var(--accent)] bg-[var(--accent)]/10 px-2 py-1">
+                      {preview ? (
+                        <ChordDisplay chord={preview} />
+                      ) : (
                         <span className="text-[10px] font-medium text-[var(--accent)]">
                           Press keys…
                         </span>
