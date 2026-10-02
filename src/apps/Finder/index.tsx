@@ -263,7 +263,7 @@ export const FinderApp: React.FC<{ windowId: string; initialParams?: any }> = ({
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {isTrashFolder ? (
               <button
                 onClick={emptyTrash}
@@ -278,27 +278,32 @@ export const FinderApp: React.FC<{ windowId: string; initialParams?: any }> = ({
                   onClick={() => createFolder('New Folder', currentFolderId)}
                   className="flex items-center gap-1 rounded-md border border-black/10 dark:border-white/10 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10"
                   title="New Folder"
+                  aria-label="New Folder"
                 >
                   <Plus size={12} />
-                  <span>New Folder</span>
+                  {!isCompact && <span>New Folder</span>}
                 </button>
-                <label className="flex items-center gap-1 rounded-md border border-black/10 dark:border-white/10 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer">
+                <label
+                  className="flex cursor-pointer items-center gap-1 rounded-md border border-black/10 px-2 py-1 text-xs text-neutral-700 hover:bg-black/5 dark:border-white/10 dark:text-neutral-300 dark:hover:bg-white/10"
+                  title="Import"
+                  aria-label="Import file"
+                >
                   <Upload size={12} />
-                  <span>Import</span>
+                  {!isCompact && <span>Import</span>}
                   <input type="file" onChange={handleFileUpload} className="hidden" />
                 </label>
               </>
             )}
 
             {/* Search */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className="w-32 rounded-md border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-800/80 py-1 pl-7 pr-2 text-xs text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                className={`${isCompact ? 'w-24' : 'w-32'} rounded-md border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-800/80 py-1 pl-7 pr-2 text-xs text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[var(--accent)]`}
               />
             </div>
           </div>
