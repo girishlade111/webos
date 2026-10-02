@@ -8,6 +8,7 @@ import { useFSStore, DESKTOP_ID, DOCUMENTS_ID, DOWNLOADS_ID, PICTURES_ID, MUSIC_
 import { useProcessStore } from '../../core/processStore';
 import { FSNode } from '../../types/os';
 import { sound } from '../../core/sound';
+import { useViewportStore } from '../../core/viewportStore';
 
 export const FinderApp: React.FC<{ windowId: string; initialParams?: any }> = ({ initialParams }) => {
   const [currentFolderId, setCurrentFolderId] = useState<string>(initialParams?.folderId || DESKTOP_ID);
@@ -22,6 +23,7 @@ export const FinderApp: React.FC<{ windowId: string; initialParams?: any }> = ({
 
   const { nodes, getChildren, createFolder, createFile, moveToTrash, emptyTrash, renameNode, exportFile, importFile } = useFSStore();
   const { openWindow } = useProcessStore();
+  const isCompact = useViewportStore((s) => s.isCompact);
 
   const currentFolder = nodes[currentFolderId] || nodes[DESKTOP_ID];
 
