@@ -4,6 +4,7 @@ import {
   Heading1, Heading2, Strikethrough, FileText, Share 
 } from 'lucide-react';
 import { sound } from '../../core/sound';
+import { useViewportStore } from '../../core/viewportStore';
 
 interface Note {
   id: string;
@@ -55,6 +56,7 @@ Remember to keep glassmorphism blur high and animations at 60fps!`,
 ];
 
 export const NotesApp: React.FC<{ windowId: string }> = () => {
+  const isCompact = useViewportStore((s) => s.isCompact);
   const [notes, setNotes] = useState<Note[]>(() => {
     try {
       const saved = localStorage.getItem('webos_notes_data');
@@ -138,7 +140,8 @@ export const NotesApp: React.FC<{ windowId: string }> = () => {
 
   return (
     <div className="flex h-full w-full bg-[var(--window-bg)] text-[var(--window-text)] select-none">
-      {/* Sidebar List */}
+      {/* Sidebar List — hidden on compact so the editor keeps the full width. */}
+      {!isCompact && (
       <div className="w-64 shrink-0 border-r border-black/10 dark:border-white/10 bg-[var(--window-sidebar)] flex flex-col">
         {/* Search & New */}
         <div className="flex items-center gap-2 p-2.5 border-b border-black/10 dark:border-white/10">
@@ -211,6 +214,7 @@ export const NotesApp: React.FC<{ windowId: string }> = () => {
           })}
         </div>
       </div>
+      )}
 
       {/* Editor Main Pane */}
       <div className="flex flex-1 flex-col overflow-hidden bg-white dark:bg-neutral-900/40">

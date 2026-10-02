@@ -214,10 +214,11 @@ export const FinderApp: React.FC<{ windowId: string; initialParams?: any }> = ({
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Finder Toolbar */}
-        <div className="flex h-11 items-center justify-between border-b border-black/10 dark:border-white/10 px-3 bg-[var(--window-header)] gap-2">
+        {/* Finder Toolbar — scrolls horizontally on compact instead of squeezing
+            every control into 393px. Labels collapse to icons there. */}
+        <div className={`flex h-11 items-center gap-2 border-b border-black/10 bg-[var(--window-header)] px-3 dark:border-white/10 ${isCompact ? 'justify-start overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : 'justify-between'}`}>
           {/* History Nav */}
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <button
               onClick={goBack}
               disabled={historyIdx === 0}
@@ -240,7 +241,7 @@ export const FinderApp: React.FC<{ windowId: string; initialParams?: any }> = ({
           </div>
 
           {/* Center actions: View mode */}
-          <div className="flex items-center rounded-md border border-black/10 dark:border-white/10 p-0.5 bg-black/5 dark:bg-white/5">
+          <div className="flex shrink-0 items-center rounded-md border border-black/10 dark:border-white/10 p-0.5 bg-black/5 dark:bg-white/5">
             <button
               onClick={() => setViewMode('grid')}
               className={`rounded p-1 transition-colors ${

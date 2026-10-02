@@ -86,7 +86,7 @@ export default function App() {
       style={{
         filter: brightness < 100 ? `brightness(${brightness / 100})` : 'none',
       }}
-      className="relative h-screen w-screen overflow-hidden bg-black text-slate-100 font-sans select-none"
+      className="webos-shell relative w-screen overflow-hidden bg-black text-slate-100 font-sans select-none"
     >
       {/* OS Lifecycle State Renderers */}
       {osState === 'booting' && <BootScreen />}

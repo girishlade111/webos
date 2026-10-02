@@ -462,14 +462,18 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
           <button
             onClick={handleClose}
             aria-label="Close window"
-            className={`flex items-center justify-center rounded-full bg-[#ff5f56] border border-[#e0443e] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
-              isTouch ? 'h-12 w-12' : 'h-3 w-3'
+            className={`flex cursor-pointer items-center justify-center rounded-full transition-all active:brightness-75 ${
+              isTouch
+                ? 'h-11 w-11 bg-transparent'
+                : 'h-3 w-3 border border-[#e0443e] bg-[#ff5f56] text-neutral-900 shadow-xs'
             }`}
             title="Close (⌘W)"
           >
             <span
-              className={`flex items-center justify-center rounded-full bg-[#ff5f56] border border-[#e0443e] ${
-                isTouch ? 'h-3 w-3' : 'h-full w-full'
+              className={`flex items-center justify-center rounded-full ${
+                isTouch
+                  ? 'h-3 w-3 border border-[#e0443e] bg-[#ff5f56] shadow-xs'
+                  : 'h-full w-full'
               }`}
             >
               {isHoveringControls && !isTouch && (
@@ -484,14 +488,18 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
           <button
             onClick={handleMinimize}
             aria-label="Minimize window"
-            className={`flex items-center justify-center rounded-full bg-[#ffbd2e] border border-[#dea123] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
-              isTouch ? 'h-12 w-12' : 'h-3 w-3'
+            className={`flex cursor-pointer items-center justify-center rounded-full transition-all active:brightness-75 ${
+              isTouch
+                ? 'h-11 w-11 bg-transparent'
+                : 'h-3 w-3 border border-[#dea123] bg-[#ffbd2e] text-neutral-900 shadow-xs'
             }`}
             title="Minimize (⌘M)"
           >
             <span
-              className={`flex items-center justify-center rounded-full bg-[#ffbd2e] border border-[#dea123] ${
-                isTouch ? 'h-3 w-3' : 'h-full w-full'
+              className={`flex items-center justify-center rounded-full ${
+                isTouch
+                  ? 'h-3 w-3 border border-[#dea123] bg-[#ffbd2e] shadow-xs'
+                  : 'h-full w-full'
               }`}
             >
               {isHoveringControls && !isTouch && (
@@ -522,14 +530,18 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
               }}
               aria-label="Zoom window"
               aria-expanded={showTileMenu}
-              className={`flex items-center justify-center rounded-full bg-[#27c93f] border border-[#1aab29] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
-                isTouch ? 'h-12 w-12' : 'h-3 w-3'
+              className={`flex cursor-pointer items-center justify-center rounded-full transition-all active:brightness-75 ${
+                isTouch
+                  ? 'h-11 w-11 bg-transparent'
+                  : 'h-3 w-3 border border-[#1aab29] bg-[#27c93f] text-neutral-900 shadow-xs'
               }`}
               title="Zoom / Fullscreen (Hold for Tiling Options)"
             >
               <span
-                className={`flex items-center justify-center rounded-full bg-[#27c93f] border border-[#1aab29] ${
-                  isTouch ? 'h-3 w-3' : 'h-full w-full'
+                className={`flex items-center justify-center rounded-full ${
+                  isTouch
+                    ? 'h-3 w-3 border border-[#1aab29] bg-[#27c93f] shadow-xs'
+                    : 'h-full w-full'
                 }`}
               >
                 {isHoveringControls && !isTouch && (

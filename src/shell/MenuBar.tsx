@@ -67,19 +67,21 @@ export const MenuBar: React.FC = () => {
 
   const menuBarRef = useRef<HTMLDivElement>(null);
 
-  // Update clock
+  // Update clock. Compact keeps time only: the full "Thu 1 Oct 13:01"
+  // string is too wide next to the status cluster on a phone.
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      const str = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) +
-        '  ' +
-        now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const time = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const str = isCompact
+        ? time
+        : now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) + '  ' + time;
       setClockStr(str);
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isCompact]);
 
   // Track the real system battery via the Battery Status API
   const { level: batteryLevel, charging: isCharging, hasBattery, showPercentage, attach } = useBatteryStore();
@@ -343,9 +345,12 @@ export const MenuBar: React.FC = () => {
         })}
       </div>
 
-      {/* Right Status Controls */}
+      {/* Right Status Controls.
+          Compact keeps only essentials: Time Machine, Wi-Fi, and the volume
+          glyph move behind Control Center, which already exposes them. */}
       <div className="flex items-center gap-1">
         {/* Time Machine Status -> opens popover with backup summary */}
+        {!isCompact && (
         <div className="relative">
           <button
             onClick={() => {
@@ -429,6 +434,7 @@ export const MenuBar: React.FC = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Battery Indicator -> Click opens Battery popover */}
         {hasBattery && (
@@ -450,7 +456,7 @@ export const MenuBar: React.FC = () => {
                   : 'hover:bg-black/10 dark:hover:bg-white/10'
               }`}
             >
-              {showPercentage && (
+              {showPercentage && !isCompact && (
                 <span className="text-[11px] font-medium leading-none tabular-nums">
                   {batteryPercent}%
                 </span>
@@ -465,6 +471,7 @@ export const MenuBar: React.FC = () => {
         )}
 
         {/* Wi-Fi Popover Toggle */}
+        {!isCompact && (
         <div className="relative">
           <button
             onClick={() => {
@@ -495,8 +502,10 @@ export const MenuBar: React.FC = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Output Volume Glyph -> opens Control Center, scroll/pad to adjust */}
+        {!isCompact && (
         <button
           onClick={() => setControlCenterOpen(true)}
           onWheel={(e) => {
@@ -515,6 +524,7 @@ export const MenuBar: React.FC = () => {
             className={soundEnabled ? 'opacity-90' : 'opacity-40'}
           />
         </button>
+        )}
 
         {/* Control Center Toggle */}
         <button

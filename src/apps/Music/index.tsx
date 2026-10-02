@@ -4,6 +4,7 @@ import {
   Shuffle, Repeat, Music as MusicIcon, ListMusic 
 } from 'lucide-react';
 import { sound } from '../../core/sound';
+import { useViewportStore } from '../../core/viewportStore';
 
 interface Track {
   id: string;
@@ -55,6 +56,7 @@ const PLAYLIST: Track[] = [
 ];
 
 export const MusicApp: React.FC<{ windowId: string }> = () => {
+  const isCompact = useViewportStore((s) => s.isCompact);
   const [currentTrackIdx, setCurrentTrackIdx] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(24);
@@ -307,7 +309,8 @@ export const MusicApp: React.FC<{ windowId: string }> = () => {
         </div>
       </div>
 
-      {/* Right Sidebar: Playlist Queue */}
+      {/* Right Sidebar: Playlist Queue — hidden on compact. */}
+      {!isCompact && (
       <div className="w-56 border-l border-black/10 dark:border-white/10 bg-[var(--window-sidebar)] p-3 flex flex-col">
         <div className="flex items-center gap-2 pb-2 border-b border-black/10 dark:border-white/10 text-xs font-semibold text-neutral-800 dark:text-neutral-200">
           <ListMusic size={14} />
@@ -343,6 +346,7 @@ export const MusicApp: React.FC<{ windowId: string }> = () => {
           })}
         </div>
       </div>
+      )}
     </div>
   );
 };

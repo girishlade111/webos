@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Clock, Tag, Trash2, Calendar as CalIcon } from 'lucide-react';
 import { sound } from '../../core/sound';
+import { useViewportStore } from '../../core/viewportStore';
 
 interface CalEvent {
   id: string;
@@ -43,6 +44,7 @@ const INITIAL_EVENTS: CalEvent[] = [
 ];
 
 export const CalendarApp: React.FC<{ windowId: string }> = () => {
+  const isCompact = useViewportStore((s) => s.isCompact);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<CalEvent[]>(() => {
     try {
@@ -149,7 +151,8 @@ export const CalendarApp: React.FC<{ windowId: string }> = () => {
 
   return (
     <div className="flex h-full w-full bg-[var(--window-bg)] text-[var(--window-text)] select-none">
-      {/* Sidebar: Mini Calendar and Selected Date's Agenda */}
+      {/* Sidebar: Mini Calendar and Selected Date's Agenda — hidden on compact. */}
+      {!isCompact && (
       <div className="w-64 shrink-0 border-r border-black/10 dark:border-white/10 bg-[var(--window-sidebar)] flex flex-col p-3 gap-3">
         <div className="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
           <span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200">Agenda</span>
@@ -210,6 +213,7 @@ export const CalendarApp: React.FC<{ windowId: string }> = () => {
           )}
         </div>
       </div>
+      )}
 
       {/* Main Month Grid View */}
       <div className="flex flex-1 flex-col overflow-hidden bg-white dark:bg-neutral-900">

@@ -63,6 +63,23 @@
   }
 }
 
+/* Shell viewport. `100dvh` tracks the visible viewport when mobile browser
+   chrome collapses on scroll; `100vh` remains as the fallback. */
+.webos-shell {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overscroll-behavior: none;
+}
+
+@media (pointer: coarse) {
+  button,
+  [role='button'] {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 /* Glassmorphism utility */
 .glass-bar {
   backdrop-filter: blur(28px) saturate(190%);
