@@ -64,11 +64,19 @@ export const Dock: React.FC = () => {
     (maxAvailableWidth - 36 - itemGapsTotal) / Math.max(1, totalItemsCount)
   );
 
-  /* Effective icon size: respects the user's preference, but downscales to fit
-     the screen and floors at the 44px hit target on touch. Without the floor a
-     26px dock icon is a coin-sized target — technically tappable, unusable. */
+  /* Icon size.
+     Pointer: honour the user's preference, downscalling only as far as needed
+     to fit the screen.
+
+     Touch: floor at the 44px hit target and let the dock scroll instead. Twelve
+     44px icons need ~570px, which no phone has — so shrinking to fit would
+     produce 23px-wide targets, which is exactly the coin-sized problem the floor
+     exists to prevent. Scrolling keeps every target usable. */
   const minIconSize = isTouch ? 44 : 26;
-  const effectiveDockSize = Math.max(minIconSize, Math.min(dockSize, maxAllowedIconSize));
+  const effectiveDockSize = isTouch
+    ? 44
+    : Math.max(minIconSize, Math.min(dockSize, maxAllowedIconSize));
+  const dockScrolls = isTouch && totalItemsCount * (effectiveDockSize + 6) > maxAvailableWidth;
 
   // Calculate fisheye magnification with boundary protection
   const getIconScale = (elX: number) => {
@@ -142,7 +150,13 @@ export const Dock: React.FC = () => {
                the gesture bar on a notched device. */
             marginBottom: safeBottom > 0 ? `${safeBottom}px` : undefined,
           }}
-          className="relative flex items-end gap-1.5 rounded-[24px] border border-white/30 dark:border-white/15 bg-white/30 dark:bg-[#1a1a20]/75 px-3 py-2.5 shadow-[0_25px_60px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.2)] backdrop-blur-3xl backdrop-saturate-200"
+          className={`relative flex items-end rounded-[24px] border border-white/30 dark:border-white/15 bg-white/30 px-3 py-2.5 shadow-[0_25px_60px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.2)] backdrop-blur-3xl backdrop-saturate-200 dark:bg-[#1a1a20]/75 ${
+            /* When the dock scrolls, snap icon-to-icon so a flick lands cleanly
+               on an app rather than between two. */
+            dockScrolls
+              ? 'gap-1.5 overflow-x-auto overscroll-x-contain [scroll-snap-type:x_proximity] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+              : 'gap-1.5'
+          }`}
         >
           {/* Main App Icons */}
           {dockApps.map((appId, idx) => {
@@ -168,6 +182,10 @@ export const Dock: React.FC = () => {
                 style={{
                   width: `${effectiveDockSize * scale}px`,
                   height: `${effectiveDockSize * scale}px`,
+                  /* A scrolling dock must not let flex squeeze its children
+                     back below the hit target. */
+                  flex: dockScrolls ? '0 0 auto' : undefined,
+                  scrollSnapAlign: dockScrolls ? 'center' : undefined,
                   transition: 'width 0.12s ease-out, height 0.12s ease-out',
                 }}
                 className={`group relative flex flex-col items-center justify-end cursor-pointer origin-bottom ${

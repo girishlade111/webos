@@ -16,6 +16,7 @@ import {
   useScreenSaverStore,
 } from '../../core/screenSaverStore';
 import { KeyboardShortcutsPane } from './KeyboardShortcuts';
+import { useViewportStore } from '../../core/viewportStore';
 
 type SettingsPane = 'appearance' | 'wallpaper' | 'dock' | 'displays' | 'screen' | 'keyboard' | 'sound' | 'users' | 'network' | 'general';
 
@@ -124,6 +125,7 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
   } = useThemeStore();
 
   const { resetFS } = useFSStore();
+  const isCompact = useViewportStore((s) => s.isCompact);
 
   const {
     enabled: saverEnabled,
@@ -155,7 +157,7 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
   };
 
   return (
-    <div className="flex h-full w-full bg-[var(--window-bg)] text-[var(--window-text)] select-none">
+    <div className={`flex h-full w-full flex-col bg-[var(--window-bg)] text-[var(--window-text)] select-none ${isCompact ? '' : 'flex-row'}`}>
       {/* Settings Navigation Sidebar
           On a compact width the 208px column would leave the pane almost no
           room, so it collapses to a horizontal scrolling rail of the same
@@ -202,7 +204,8 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
           })}
         </div>
 
-        {/* User Card footer */}
+        {/* User Card footer — the horizontal rail has no room for it. */}
+        {!isCompact && (
         <div className="flex items-center gap-2.5 rounded-xl border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 p-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-white text-sm shadow-sm font-semibold overflow-hidden shrink-0">
             {userAvatar?.startsWith('http') || userAvatar?.startsWith('/') || userAvatar?.startsWith('data:') ? (
@@ -216,10 +219,11 @@ export const SettingsApp: React.FC<{ windowId: string }> = () => {
             <p className="text-[10px] text-neutral-400">Administrator</p>
           </div>
         </div>
+        )}
       </div>
 
       {/* Pane Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className={`flex-1 overflow-y-auto ${isCompact ? 'p-4' : 'p-6'}`}>
         {/* Appearance */}
         {activePane === 'appearance' && (
           <div className="max-w-xl space-y-6">

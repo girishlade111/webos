@@ -5,9 +5,12 @@ import { useProcessStore } from '../core/processStore';
 import { useFSStore } from '../core/fsStore';
 import { APP_REGISTRY } from '../core/appRegistry';
 import { sound } from '../core/sound';
+import { useViewportStore } from '../core/viewportStore';
 
 export const Spotlight: React.FC = () => {
   const { isSpotlightOpen, setSpotlightOpen } = useThemeStore();
+  const isCompact = useViewportStore((s) => s.isCompact);
+  const safeArea = useViewportStore((s) => s.safeArea);
   const { openWindow } = useProcessStore();
   const { nodes } = useFSStore();
 
@@ -110,12 +113,17 @@ export const Spotlight: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[9000] flex items-start justify-center pt-28 bg-black/30 backdrop-blur-xs select-none"
+      className={`fixed inset-0 z-[9000] flex items-start justify-center bg-black/30 backdrop-blur-xs select-none ${
+        /* On compact the panel is a top sheet rather than a floating card, and
+           clears the notch instead of sitting under it. */
+        isCompact ? 'pt-14 px-3' : 'pt-28'
+      }`}
+      style={safeArea.top > 0 ? { paddingTop: safeArea.top + 12 } : undefined}
       onClick={() => setSpotlightOpen(false)}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-[620px] max-w-[92vw] overflow-hidden rounded-2xl border border-black/15 dark:border-white/20 bg-white/85 dark:bg-neutral-900/90 shadow-2xl glass-panel animate-fade-in"
+        className="w-[620px] max-w-full overflow-hidden rounded-2xl border border-black/15 dark:border-white/20 bg-white/85 dark:bg-neutral-900/90 shadow-2xl glass-panel animate-fade-in"
       >
         {/* Search Input Bar */}
         <div className="flex h-14 items-center gap-3 px-4 border-b border-black/10 dark:border-white/10">

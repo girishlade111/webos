@@ -11,6 +11,7 @@ import {
 } from '../../core/shortcutStore';
 import { buildShortcuts } from '../../shell/ShortcutManager';
 import { sound } from '../../core/sound';
+import { useViewportStore } from '../../core/viewportStore';
 
 /** Renders one chord as macOS does: modifier glyphs, then a key cap. */
 export const ChordDisplay: React.FC<{ chord: string }> = ({ chord }) => {
@@ -51,6 +52,7 @@ export const KeyboardShortcutsPane: React.FC = () => {
   const [search, setSearch] = useState<string>('');
   /** Live preview of the chord currently held down during a recording. */
   const [preview, setPreview] = useState<string>('');
+  const isCompact = useViewportStore((s) => s.isCompact);
 
   /* Resolve each binding against the user's rebinds, and drop the helper keys
      from `pressed` so a live recording can show what has been captured. */
@@ -156,9 +158,16 @@ export const KeyboardShortcutsPane: React.FC = () => {
   const customCount = resolved.filter((s) => s.isCustom).length;
 
   return (
-    <div className="flex h-full min-h-0">
-      {/* Category list */}
-      <div className="w-44 shrink-0 overflow-y-auto border-r border-black/10 pr-2 dark:border-white/10">
+    <div className={`flex h-full min-h-0 ${isCompact ? 'flex-col' : 'flex-row'}`}>
+      {/* Category list — a horizontal rail on compact, since a 176px column
+          plus a binding list leaves no usable width. */}
+      <div
+        className={`shrink-0 overflow-y-auto border-black/10 dark:border-white/10 ${
+          isCompact
+            ? 'flex w-full gap-1 overflow-x-auto border-b pb-2'
+            : 'w-44 border-r pr-2'
+        }`}
+      >
         {groups.map((g) => {
           const isActive = g === activeGroup;
           const count = resolved.filter((s) => s.group === g).length;
@@ -169,11 +178,11 @@ export const KeyboardShortcutsPane: React.FC = () => {
                 sound.playClick();
                 setActiveGroup(g);
               }}
-              className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs transition-colors ${
+              className={`flex shrink-0 items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-xs transition-colors ${
                 isActive
                   ? 'bg-[var(--accent)] text-white'
                   : 'text-neutral-700 hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10'
-              }`}
+              } ${isCompact ? 'whitespace-nowrap' : 'w-full'}`}
             >
               <span className="truncate pr-1">{g}</span>
               <span className={`text-[10px] ${isActive ? 'text-white/70' : 'text-neutral-400'}`}>
@@ -185,7 +194,7 @@ export const KeyboardShortcutsPane: React.FC = () => {
       </div>
 
       {/* Binding list */}
-      <div className="flex min-w-0 flex-1 flex-col pl-4">
+      <div className={`flex min-w-0 flex-1 flex-col ${isCompact ? 'pt-3' : 'pl-4'}`}>
         {/* Search */}
         <div className="mb-2 flex items-center gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md border border-black/10 bg-white/60 px-2 py-1 dark:border-white/10 dark:bg-white/10">

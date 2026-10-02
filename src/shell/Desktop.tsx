@@ -76,6 +76,11 @@ export const Desktop: React.FC = () => {
   const { openWindow } = useProcessStore();
   const { desktopWidgets, toggleDesktopWidget, setWidgetGalleryOpen } = useWidgetStore();
   const isTouch = useViewportStore((s) => s.isTouch);
+  const isCompact = useViewportStore((s) => s.isCompact);
+  /* A vertical widget column needs ~600px of height. Below that it is a
+     horizontal scroller instead. Derived from the live viewport so a rotation
+     or a split-screen resize re-evaluates it. */
+  const isShortViewport = isCompact || useViewportStore((s) => s.height) < 620;
 
   // Desktop View Options
   const [viewOptions, setViewOptions] = useState<DesktopViewOptions>(() => {
@@ -1010,14 +1015,23 @@ export const Desktop: React.FC = () => {
         </div>
       )}
 
-      {/* macOS Sonoma / Sequoia Desktop Widgets Layer */}
+      {/* macOS Sonoma / Sequoia Desktop Widgets Layer
+
+          A vertical column of 64px-wide cards overflows the moment the viewport
+          gets short (phone landscape, split-screen), so below `sm` — and on any
+          viewport too short to hold a full column — the stack becomes a
+          horizontally scrolling row. Same widgets, no clipping. */}
       {desktopWidgets.length > 0 && (
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="fixed top-12 left-6 z-[6] hidden sm:flex flex-col gap-3.5 w-64 pointer-events-auto select-none opacity-90 hover:opacity-100 transition-opacity"
+          className={`pointer-events-auto fixed left-6 top-12 z-[6] select-none opacity-90 transition-opacity hover:opacity-100 ${
+            isShortViewport
+              ? 'flex w-[calc(100vw-3rem)] flex-row gap-3 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+              : 'hidden w-64 flex-col gap-3.5 sm:flex'
+          }`}
         >
           {desktopWidgets.map((wId) => (
-            <div key={wId} className="relative group">
+            <div key={wId} className="group relative w-64 shrink-0">
               <UnifiedWidgetRenderer id={wId} compact />
               <button
                 onClick={(e) => {
@@ -1025,7 +1039,12 @@ export const Desktop: React.FC = () => {
                   sound.playClick();
                   toggleDesktopWidget(wId);
                 }}
-                className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-900/90 text-white/70 hover:text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md text-[10px]"
+                /* Always visible on touch — a hover-revealed 20px control is
+                   unreachable without a pointer. */
+                className={`absolute -top-1.5 -right-1.5 flex items-center justify-center rounded-full border border-white/20 bg-neutral-900/90 text-[10px] text-white/70 shadow-md transition-opacity hover:text-white ${
+                  isTouch ? 'h-7 w-7 opacity-90' : 'h-5 w-5 cursor-pointer opacity-0 group-hover:opacity-100'
+                }`}
+                aria-label={`Remove ${wId} widget from desktop`}
                 title="Remove widget from desktop"
               >
                 ✕
