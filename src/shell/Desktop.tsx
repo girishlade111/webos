@@ -77,10 +77,11 @@ export const Desktop: React.FC = () => {
   const { desktopWidgets, toggleDesktopWidget, setWidgetGalleryOpen } = useWidgetStore();
   const isTouch = useViewportStore((s) => s.isTouch);
   const isCompact = useViewportStore((s) => s.isCompact);
+  const viewportHeight = useViewportStore((s) => s.height);
   /* A vertical widget column needs ~600px of height. Below that it is a
      horizontal scroller instead. Derived from the live viewport so a rotation
      or a split-screen resize re-evaluates it. */
-  const isShortViewport = isCompact || useViewportStore((s) => s.height) < 620;
+  const isShortViewport = isCompact || viewportHeight < 620;
 
   // Desktop View Options
   const [viewOptions, setViewOptions] = useState<DesktopViewOptions>(() => {
