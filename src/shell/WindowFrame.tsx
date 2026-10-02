@@ -447,26 +447,37 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
           isTouch ? 'h-[48px] px-2' : 'h-[38px] px-3'
         } ${isCompact ? '' : 'cursor-default'}`}
       >
-        {/* macOS Traffic Light Buttons */}
+        {/* macOS Traffic Light Buttons
+
+            On touch the *dot* stays 12px so the control still reads as macOS,
+            but each button carries a 44px hit area via padding. Growing the
+            visible dot instead would make the traffic lights dominate a phone
+            title bar and stop looking like macOS at all. */}
         <div
           onMouseEnter={() => setIsHoveringControls(true)}
           onMouseLeave={() => setIsHoveringControls(false)}
-          className={`flex items-center ${isTouch ? '-ml-1 gap-0' : 'gap-[7.5px]'}`}
+          className={`flex items-center ${isTouch ? '-ml-3' : 'gap-[7.5px]'}`}
         >
           {/* Close (Red) */}
           <button
             onClick={handleClose}
             aria-label="Close window"
             className={`flex items-center justify-center rounded-full bg-[#ff5f56] border border-[#e0443e] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
-              isTouch ? 'h-11 w-11' : 'h-3 w-3'
+              isTouch ? 'h-12 w-12' : 'h-3 w-3'
             }`}
             title="Close (⌘W)"
           >
-            {isHoveringControls && !isTouch && (
-              <svg width="6" height="6" viewBox="0 0 6 6" fill="none" className="opacity-90">
-                <path d="M0.75 0.75L5.25 5.25M5.25 0.75L0.75 5.25" stroke="#4c0000" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
-            )}
+            <span
+              className={`flex items-center justify-center rounded-full bg-[#ff5f56] border border-[#e0443e] ${
+                isTouch ? 'h-3 w-3' : 'h-full w-full'
+              }`}
+            >
+              {isHoveringControls && !isTouch && (
+                <svg width="6" height="6" viewBox="0 0 6 6" fill="none" className="opacity-90">
+                  <path d="M0.75 0.75L5.25 5.25M5.25 0.75L0.75 5.25" stroke="#4c0000" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+              )}
+            </span>
           </button>
 
           {/* Minimize (Yellow) */}
@@ -474,15 +485,21 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
             onClick={handleMinimize}
             aria-label="Minimize window"
             className={`flex items-center justify-center rounded-full bg-[#ffbd2e] border border-[#dea123] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
-              isTouch ? 'h-11 w-11' : 'h-3 w-3'
+              isTouch ? 'h-12 w-12' : 'h-3 w-3'
             }`}
             title="Minimize (⌘M)"
           >
-            {isHoveringControls && !isTouch && (
-              <svg width="6" height="2" viewBox="0 0 6 2" fill="none" className="opacity-90">
-                <path d="M0.5 1H5.5" stroke="#5c3800" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
-            )}
+            <span
+              className={`flex items-center justify-center rounded-full bg-[#ffbd2e] border border-[#dea123] ${
+                isTouch ? 'h-3 w-3' : 'h-full w-full'
+              }`}
+            >
+              {isHoveringControls && !isTouch && (
+                <svg width="6" height="2" viewBox="0 0 6 2" fill="none" className="opacity-90">
+                  <path d="M0.5 1H5.5" stroke="#5c3800" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+              )}
+            </span>
           </button>
 
           {/* Zoom / Fullscreen (Green) with macOS Sequoia Tiling Popover */}
