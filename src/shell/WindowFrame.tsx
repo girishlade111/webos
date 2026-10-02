@@ -523,15 +523,21 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({ window: win }) => {
               aria-label="Zoom window"
               aria-expanded={showTileMenu}
               className={`flex items-center justify-center rounded-full bg-[#27c93f] border border-[#1aab29] active:brightness-75 transition-all text-neutral-900 cursor-pointer shadow-xs ${
-                isTouch ? 'h-11 w-11' : 'h-3 w-3'
+                isTouch ? 'h-12 w-12' : 'h-3 w-3'
               }`}
               title="Zoom / Fullscreen (Hold for Tiling Options)"
             >
-              {isHoveringControls && !isTouch && (
-                <svg width="6" height="6" viewBox="0 0 6 6" fill="none" className="opacity-90">
-                  <path d="M1 5L5 1M5 1H2M5 1V4" stroke="#003e00" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
+              <span
+                className={`flex items-center justify-center rounded-full bg-[#27c93f] border border-[#1aab29] ${
+                  isTouch ? 'h-3 w-3' : 'h-full w-full'
+                }`}
+              >
+                {isHoveringControls && !isTouch && (
+                  <svg width="6" height="6" viewBox="0 0 6 6" fill="none" className="opacity-90">
+                    <path d="M1 5L5 1M5 1H2M5 1V4" stroke="#003e00" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </span>
             </button>
 
             {/* macOS Sequoia Window Tiling Popover */}
