@@ -120,8 +120,14 @@ export const FinderApp: React.FC<{ windowId: string; initialParams?: any }> = ({
 
   return (
     <div className="flex h-full w-full select-none bg-[var(--window-bg)] text-[var(--window-text)]">
-      {/* Sidebar */}
-      <div className="w-48 shrink-0 border-r border-black/10 dark:border-white/10 bg-[var(--window-sidebar)] p-3 flex flex-col justify-between text-xs font-medium">
+      {/* Sidebar
+          Hidden on a compact viewport: 192px of 393px is half the screen, and
+          iPadOS Files does the same — content first, navigation on demand. */}
+      <div
+        className={`shrink-0 border-r border-black/10 bg-[var(--window-sidebar)] text-xs font-medium dark:border-white/10 ${
+          isCompact ? 'hidden' : 'flex w-48 flex-col justify-between p-3'
+        }`}
+      >
         <div className="space-y-4">
           {/* Favorites */}
           <div>
