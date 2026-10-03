@@ -24,6 +24,7 @@ export const Dock: React.FC = () => {
     typeof window !== 'undefined' ? window.innerWidth : 1200
   );
   const isTouch = useViewportStore((s) => s.isTouch);
+  const isCompact = useViewportStore((s) => s.isCompact);
   const safeBottom = useViewportStore((s) => s.safeArea.bottom);
 
   const dockRef = useRef<HTMLDivElement>(null);
@@ -109,6 +110,7 @@ export const Dock: React.FC = () => {
   const handleAppClick = (appId: string) => {
     sound.playDockClick();
     setContextMenu(null);
+    setTouchDockRevealed(false);
     const minWin = windows.find((w) => w.appId === appId && w.isMinimized);
     if (minWin) {
       restoreWindow(minWin.id);
@@ -128,18 +130,80 @@ export const Dock: React.FC = () => {
     });
   };
 
-  const isAutoHidden = dockAutoHide && !isDockHovered && contextMenu === null;
+  /* Compact windows are full-bleed, so the Dock would sit on top of window
+     content (e.g. Finder's status bar). iPadOS/macOS hide the Dock in a
+     full-screen app, so mirror that until every window is minimized. */
+  const compactFullScreenApp = isCompact && windows.some((w) => !w.isMinimized);
+
+  /* There is no hover on touch, so an upward swipe from the bottom edge
+     reveals the Dock the way iPadOS does. */
+  const [touchDockRevealed, setTouchDockRevealed] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchHideTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!compactFullScreenApp) setTouchDockRevealed(false);
+  }, [compactFullScreenApp]);
+
+  useEffect(
+    () => () => {
+      if (touchHideTimerRef.current) window.clearTimeout(touchHideTimerRef.current);
+    },
+    []
+  );
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!compactFullScreenApp || touchDockRevealed) return;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const startY = touchStartYRef.current;
+    if (startY === null) return;
+    touchStartYRef.current = null;
+    if (e.touches[0].clientY - startY < -24) {
+      setTouchDockRevealed(true);
+      if (touchHideTimerRef.current) window.clearTimeout(touchHideTimerRef.current);
+      touchHideTimerRef.current = window.setTimeout(() => setTouchDockRevealed(false), 2600);
+    }
+  };
+
+  const dockVisibleByTouch = compactFullScreenApp && touchDockRevealed;
+
+  const isAutoHidden =
+    (dockAutoHide || compactFullScreenApp) &&
+    !isDockHovered &&
+    !dockVisibleByTouch &&
+    contextMenu === null;
+
+  /* The reveal hitbox must not swallow taps meant for the window underneath. */
+  const hitboxInteractive = !compactFullScreenApp || isDockHovered || dockVisibleByTouch;
 
   return (
     <>
+      {/* Bottom-edge swipe zone: the only Dock-affecting gesture over window
+          content, so it is kept as thin as the home indicator. */}
+      {compactFullScreenApp && (
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          style={{ touchAction: 'pan-y' }}
+          data-dock-swipe-zone
+          className="fixed bottom-0 left-0 right-0 z-[7000] h-[18px]"
+        />
+      )}
+
       {/* Hitbox zone for autohide dock */}
       <div
         onMouseEnter={() => setIsDockHovered(true)}
         onMouseLeave={() => setIsDockHovered(false)}
-        className="fixed bottom-0 left-0 right-0 z-[7000] flex justify-center pb-2 pt-6 pointer-events-auto"
+        className={`fixed bottom-0 left-0 right-0 z-[7000] flex justify-center pb-2 pt-6 ${
+          hitboxInteractive ? 'pointer-events-auto' : 'pointer-events-none'
+        }`}
       >
         <div
           ref={dockRef}
+          data-dock-surface
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           style={{
