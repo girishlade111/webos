@@ -215,3 +215,7 @@ This project is open-source and released under the **[MIT License](LICENSE)**. F
 Contributions, feature requests, and bug reports are warmly welcomed!
 - Feel free to open an **Issue** or submit a **Pull Request**.
 - If you enjoy this project, please give it a ⭐️ on GitHub!
+
+---
+
+**Built by Girish Lade** — [ladestack.in](https://ladestack.in)
