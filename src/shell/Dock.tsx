@@ -134,16 +134,17 @@ export const Dock: React.FC = () => {
      content (e.g. Finder's status bar). iPadOS/macOS hide the Dock in a
      full-screen app, so mirror that until every window is minimized. */
   const compactFullScreenApp = isCompact && windows.some((w) => !w.isMinimized);
+  const dockWouldAutoHide = dockAutoHide || compactFullScreenApp;
 
-  /* There is no hover on touch, so an upward swipe from the bottom edge
+  /* Touch devices have no hover, so an upward swipe from the bottom edge
      reveals the Dock the way iPadOS does. */
   const [touchDockRevealed, setTouchDockRevealed] = useState(false);
   const touchStartYRef = useRef<number | null>(null);
   const touchHideTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!compactFullScreenApp) setTouchDockRevealed(false);
-  }, [compactFullScreenApp]);
+    if (!dockWouldAutoHide) setTouchDockRevealed(false);
+  }, [dockWouldAutoHide]);
 
   useEffect(
     () => () => {
@@ -153,7 +154,7 @@ export const Dock: React.FC = () => {
   );
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (!compactFullScreenApp || touchDockRevealed) return;
+    if (!dockWouldAutoHide || touchDockRevealed) return;
     touchStartYRef.current = e.touches[0].clientY;
   };
 
@@ -168,22 +169,21 @@ export const Dock: React.FC = () => {
     }
   };
 
-  const dockVisibleByTouch = compactFullScreenApp && touchDockRevealed;
+  /* A hover left over from an emulated/attached pointer must not keep the
+     Dock open on a touch device. */
+  const revealedByHover = !isTouch && isDockHovered;
 
   const isAutoHidden =
-    (dockAutoHide || compactFullScreenApp) &&
-    !isDockHovered &&
-    !dockVisibleByTouch &&
-    contextMenu === null;
+    dockWouldAutoHide && !revealedByHover && !touchDockRevealed && contextMenu === null;
 
   /* The reveal hitbox must not swallow taps meant for the window underneath. */
-  const hitboxInteractive = !compactFullScreenApp || isDockHovered || dockVisibleByTouch;
+  const hitboxInteractive = !dockWouldAutoHide || revealedByHover || touchDockRevealed;
 
   return (
     <>
       {/* Bottom-edge swipe zone: the only Dock-affecting gesture over window
           content, so it is kept as thin as the home indicator. */}
-      {compactFullScreenApp && (
+      {dockWouldAutoHide && isTouch && (
         <div
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
